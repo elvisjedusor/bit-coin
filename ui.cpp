@@ -1036,11 +1036,8 @@ void CMainFrame::OnPaintListCtrl(wxPaintEvent& event)
     // Skip lets the listctrl do the paint, we're just hooking the message
     event.Skip();
 
-    if (ptaskbaricon)
-        ptaskbaricon->UpdateTooltip();
-
     //
-    // Slower stuff
+    // Throttle expensive updates to prevent lag during scrolling
     //
     static int nTransactionCount;
     bool fPaintedBalance = false;
@@ -1048,6 +1045,10 @@ void CMainFrame::OnPaintListCtrl(wxPaintEvent& event)
     {
         nLastRepaint = nNeedRepaint;
         nLastRepaintTime = GetTimeMillis();
+
+        // Update taskbar tooltip
+        if (ptaskbaricon)
+            ptaskbaricon->UpdateTooltip();
 
         // Update listctrl contents
         if (!vWalletUpdated.empty())
@@ -1091,71 +1092,71 @@ void CMainFrame::OnPaintListCtrl(wxPaintEvent& event)
                 nTransactionCount += wtx.nLinesDisplayed;
             }
         }
+
+        // Update status column of visible items only
+        RefreshStatusColumn();
+
+        // Update status bar - 5 separate fields
+        // Field 0: Hashrate (set by mining thread, clear when not mining)
+        if (!fGenerateBitcoins)
+            m_statusBar->SetStatusText("", 0);
+
+        // Field 1: Mining status (with leading space for padding)
+        string strMining = "";
+        if (fGenerateBitcoins)
+        {
+            int nMinerThreads = vnThreadsRunning[3];
+            if (nMinerThreads > 0)
+                strMining = strprintf(_(" Mining (%d)"), nMinerThreads);
+            else
+                strMining = _(" Mining");
+        }
+        if (fGenerateBitcoins && vNodes.empty())
+            strMining = _(" (not connected)");
+        m_statusBar->SetStatusText(strMining, 1);
+
+        // Field 2: Connections
+        int nNumConnections = 0;
+        int nHighestPeerHeight = 0;
+        CRITICAL_BLOCK(cs_vNodes)
+        {
+            nNumConnections = vNodes.size();
+            foreach(CNode* pnode, vNodes)
+                if (pnode->nStartingHeight > nHighestPeerHeight)
+                    nHighestPeerHeight = pnode->nStartingHeight;
+        }
+        string strConnections = strprintf(_(" %d connection%s"), nNumConnections, nNumConnections == 1 ? "" : "s");
+        m_statusBar->SetStatusText(strConnections, 2);
+
+        // Field 3: Blocks
+        string strBlocks;
+        if (nHighestPeerHeight > 0 && nBestHeight < nHighestPeerHeight - 5)
+            strBlocks = strprintf(_(" %d / %d blocks"), nBestHeight + 1, nHighestPeerHeight);
+        else
+            strBlocks = strprintf(_(" %d blocks"), nBestHeight + 1);
+        m_statusBar->SetStatusText(strBlocks, 3);
+
+        // Field 4: Transactions (only show if > 0)
+        if (nTransactionCount > 0)
+        {
+            string strTransactions = strprintf(_(" %d transaction%s"), nTransactionCount, nTransactionCount == 1 ? "" : "s");
+            m_statusBar->SetStatusText(strTransactions, 4);
+        }
+        else
+        {
+            m_statusBar->SetStatusText("", 4);
+        }
+
+        if (fDebug && GetTime() - nThreadSocketHandlerHeartbeat > 60)
+            m_statusBar->SetStatusText("ERROR: ThreadSocketHandler has stopped", 0);
+
+        // Update receiving address
+        string strDefaultAddress = PubKeyToAddress(vchDefaultKey);
+        if (m_textCtrlAddress->GetValue() != strDefaultAddress)
+            m_textCtrlAddress->SetValue(strDefaultAddress);
     }
     if (!vWalletUpdated.empty() || !fPaintedBalance)
         nNeedRepaint++;
-
-    // Update status column of visible items only
-    RefreshStatusColumn();
-
-    // Update status bar - 5 separate fields
-    // Field 0: Hashrate (set by mining thread, clear when not mining)
-    if (!fGenerateBitcoins)
-        m_statusBar->SetStatusText("", 0);
-
-    // Field 1: Mining status (with leading space for padding)
-    string strMining = "";
-    if (fGenerateBitcoins)
-    {
-        int nMinerThreads = vnThreadsRunning[3];
-        if (nMinerThreads > 0)
-            strMining = strprintf(_(" Mining (%d)"), nMinerThreads);
-        else
-            strMining = _(" Mining");
-    }
-    if (fGenerateBitcoins && vNodes.empty())
-        strMining = _(" (not connected)");
-    m_statusBar->SetStatusText(strMining, 1);
-
-    // Field 2: Connections
-    int nNumConnections = 0;
-    int nHighestPeerHeight = 0;
-    CRITICAL_BLOCK(cs_vNodes)
-    {
-        nNumConnections = vNodes.size();
-        foreach(CNode* pnode, vNodes)
-            if (pnode->nStartingHeight > nHighestPeerHeight)
-                nHighestPeerHeight = pnode->nStartingHeight;
-    }
-    string strConnections = strprintf(_(" %d connection%s"), nNumConnections, nNumConnections == 1 ? "" : "s");
-    m_statusBar->SetStatusText(strConnections, 2);
-
-    // Field 3: Blocks
-    string strBlocks;
-    if (nHighestPeerHeight > 0 && nBestHeight < nHighestPeerHeight - 5)
-        strBlocks = strprintf(_(" %d / %d blocks"), nBestHeight + 1, nHighestPeerHeight);
-    else
-        strBlocks = strprintf(_(" %d blocks"), nBestHeight + 1);
-    m_statusBar->SetStatusText(strBlocks, 3);
-
-    // Field 4: Transactions (only show if > 0)
-    if (nTransactionCount > 0)
-    {
-        string strTransactions = strprintf(_(" %d transaction%s"), nTransactionCount, nTransactionCount == 1 ? "" : "s");
-        m_statusBar->SetStatusText(strTransactions, 4);
-    }
-    else
-    {
-        m_statusBar->SetStatusText("", 4);
-    }
-
-    if (fDebug && GetTime() - nThreadSocketHandlerHeartbeat > 60)
-        m_statusBar->SetStatusText("ERROR: ThreadSocketHandler has stopped", 0);
-
-    // Update receiving address
-    string strDefaultAddress = PubKeyToAddress(vchDefaultKey);
-    if (m_textCtrlAddress->GetValue() != strDefaultAddress)
-        m_textCtrlAddress->SetValue(strDefaultAddress);
 }
 
 

@@ -10,12 +10,13 @@ CXXFLAGS = -std=c++11 -O2 -Wno-invalid-offsetof -Wformat -Wno-deprecated-declara
 # wxWidgets configuration (for GUI builds)
 WXCONFIG ?= wx-config
 WXCXXFLAGS := $(shell $(WXCONFIG) --cxxflags 2>/dev/null || echo "-DwxUSE_GUI=0")
-WXLIBS := $(shell $(WXCONFIG) --libs 2>/dev/null || echo "")
+WXLIBS := $(shell $(WXCONFIG) --libs std,html 2>/dev/null || echo "")
 
 # Include paths
 INCLUDEPATHS = \
     -I"/usr/include" \
-    -I"/usr/local/include"
+    -I"/usr/local/include" \
+    -I"."
 
 # Library paths
 LIBPATHS = \
@@ -33,39 +34,39 @@ LIBS_DAEMON = \
     -lcrypto \
     -lpthread
 
-# Libraries for GUI
-LIBS_GUI = $(WXLIBS) $(LIBS_DAEMON) -lgtk-3 -lgdk-3
+# Libraries for GUI (wxWidgets 3.x with GTK3)
+LIBS_GUI = $(WXLIBS) $(LIBS_DAEMON)
 
 # Defines
 # OPENSSL_SUPPRESS_DEPRECATED - suppress EC_KEY deprecation warnings in OpenSSL 3.x
 DEFS = -DNOPCH -D_FILE_OFFSET_BITS=64 -DOPENSSL_SUPPRESS_DEPRECATED
-DEFS_GUI = $(DEFS) -D__WXGTK__
+DEFS_GUI = $(DEFS) -DwxUSE_GUI=1
 DEFS_DAEMON = $(DEFS) -DwxUSE_GUI=0
 
 # Debug flags (comment out for release)
 # DEBUGFLAGS = -g -D__WXDEBUG__
 
 HEADERS = headers.h strlcpy.h serialize.h uint256.h util.h key.h bignum.h base58.h \
-    script.h db.h db_cxx_compat.h net.h irc.h main.h rpc.h uibase.h ui.h init.h sha.h
+    script.h bitcoin_db.h db_cxx_compat.h net.h irc.h main.h rpc.h uibase.h ui.h init.h sha.h
 
-# Object files
-OBJS = \
-    obj/util.o \
-    obj/script.o \
-    obj/db.o \
-    obj/net.o \
-    obj/irc.o \
-    obj/main.o \
-    obj/rpc.o \
-    obj/init.o \
+# Object files for GUI
+OBJS_GUI = \
+    obj/gui/util.o \
+    obj/gui/script.o \
+    obj/gui/bitcoin_db.o \
+    obj/gui/net.o \
+    obj/gui/irc.o \
+    obj/gui/main.o \
+    obj/gui/rpc.o \
+    obj/gui/init.o \
+    obj/gui/ui.o \
+    obj/gui/uibase.o \
     obj/sha.o
-
-OBJS_GUI = $(OBJS) obj/ui.o obj/uibase.o
 
 OBJS_DAEMON = \
     obj/nogui/util.o \
     obj/nogui/script.o \
-    obj/nogui/db.o \
+    obj/nogui/bitcoin_db.o \
     obj/nogui/net.o \
     obj/nogui/irc.o \
     obj/nogui/main.o \
@@ -76,9 +77,11 @@ OBJS_DAEMON = \
 # Targets
 all: bitcoinogd
 
-# GUI version (requires wxWidgets)
-bitcoinog: $(OBJS_GUI)
-	$(CXX) $(CXXFLAGS) $(DEFS_GUI) -o $@ $(LIBPATHS) $^ $(LIBS_GUI)
+# GUI version (requires wxWidgets 3.x)
+gui: bitcoinog
+
+bitcoinog: directories $(OBJS_GUI)
+	$(CXX) $(CXXFLAGS) $(DEFS_GUI) -o $@ $(LIBPATHS) $(OBJS_GUI) $(LIBS_GUI)
 
 # Daemon version (no GUI)
 bitcoinogd: directories $(OBJS_DAEMON)
@@ -87,10 +90,11 @@ bitcoinogd: directories $(OBJS_DAEMON)
 # Create object directories
 directories:
 	@mkdir -p obj
+	@mkdir -p obj/gui
 	@mkdir -p obj/nogui
 
-# GUI object files
-obj/%.o: %.cpp $(HEADERS)
+# GUI object files - explicitly set wxUSE_GUI=1
+obj/gui/%.o: %.cpp $(HEADERS)
 	$(CXX) -c $(CXXFLAGS) $(DEFS_GUI) $(WXCXXFLAGS) $(INCLUDEPATHS) -o $@ $<
 
 # Daemon object files (no GUI)
@@ -120,4 +124,7 @@ clean:
 install: bitcoinogd
 	install -m 755 bitcoinogd /usr/local/bin/
 
-.PHONY: all clean directories install
+install-gui: bitcoinog
+	install -m 755 bitcoinog /usr/local/bin/
+
+.PHONY: all gui clean directories install install-gui

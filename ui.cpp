@@ -7,9 +7,13 @@
 #include <crtdbg.h>
 #endif
 
+#if wxUSE_GUI
 
-
+#if wxCHECK_VERSION(3, 0, 0)
+wxDEFINE_EVENT(wxEVT_UITHREADCALL, wxCommandEvent);
+#else
 DEFINE_EVENT_TYPE(wxEVT_UITHREADCALL)
+#endif
 
 CMainFrame* pframeMain = NULL;
 CMyTaskBarIcon* ptaskbaricon = NULL;
@@ -371,14 +375,12 @@ void CMainFrame::OnIconize(wxIconizeEvent& event)
     event.Skip();
     // Hide the task bar button when minimized.
     // Event is sent when the frame is minimized or restored.
-    // wxWidgets 2.8.9 doesn't have IsIconized() so there's no way
-    // to get rid of the deprecated warning.  Just ignore it.
-    if (!event.Iconized())
+    if (!event.IsIconized())
         fClosedToTray = false;
 //#ifdef __WXMSW__
     // The tray icon sometimes disappears on ubuntu karmic
     // Hiding the taskbar button doesn't work cleanly on ubuntu lucid
-    if (fMinimizeToTray && event.Iconized())
+    if (fMinimizeToTray && event.IsIconized())
         fClosedToTray = true;
     Show(!fClosedToTray);
 //#endif
@@ -914,9 +916,8 @@ void ThreadDelayedRepaint(void* parg)
             if (pframeMain)
             {
                 printf("DelayedRepaint\n");
-                wxPaintEvent event;
                 pframeMain->fRefresh = true;
-                pframeMain->GetEventHandler()->AddPendingEvent(event);
+                pframeMain->Refresh();
             }
         }
         Sleep(nRepaintInterval);
@@ -939,9 +940,8 @@ void MainFrameRepaint()
         nLastRepaintRequest = GetTimeMillis();
 
         printf("MainFrameRepaint\n");
-        wxPaintEvent event;
         pframeMain->fRefresh = true;
-        pframeMain->GetEventHandler()->AddPendingEvent(event);
+        pframeMain->Refresh();
     }
 }
 
@@ -1007,16 +1007,55 @@ void CMainFrame::OnPaintListCtrl(wxPaintEvent& event)
     // Update status bar
     string strGen = "";
     if (fGenerateBitcoins)
-        strGen = _("    Generating");
+    {
+        int nMinerThreads = vnThreadsRunning[3];
+        if (nMinerThreads > 0)
+            strGen = strprintf(_("    Mining (%d)"), nMinerThreads);
+        else
+            strGen = _("    Mining");
+    }
     if (fGenerateBitcoins && vNodes.empty())
         strGen = _("(not connected)");
     m_statusBar->SetStatusText(strGen, 1);
 
-    string strStatus = strprintf(_("     %d connections     %d blocks     %d transactions"), vNodes.size(), nBestHeight + 1, nTransactionCount);
+    int nNumConnections = 0;
+    int nHighestPeerHeight = 0;
+    CRITICAL_BLOCK(cs_vNodes)
+    {
+        nNumConnections = vNodes.size();
+        foreach(CNode* pnode, vNodes)
+            if (pnode->nStartingHeight > nHighestPeerHeight)
+                nHighestPeerHeight = pnode->nStartingHeight;
+    }
+
+    string strStatus = strprintf(_("     %d conn     %d blocks"), nNumConnections, nBestHeight + 1);
     m_statusBar->SetStatusText(strStatus, 2);
 
     if (fDebug && GetTime() - nThreadSocketHandlerHeartbeat > 60)
         m_statusBar->SetStatusText("     ERROR: ThreadSocketHandler has stopped", 0);
+
+    if (nNumConnections == 0)
+    {
+        m_staticTextSyncStatus->SetLabel(_("Offline"));
+        m_staticTextSyncStatus->SetForegroundColour(wxColour(200, 60, 60));
+        m_gaugeSync->SetValue(0);
+        m_staticTextSyncProgress->SetLabel(_("No connections"));
+    }
+    else if (nHighestPeerHeight > 0 && nBestHeight < nHighestPeerHeight - 5)
+    {
+        m_staticTextSyncStatus->SetLabel(_("Syncing"));
+        m_staticTextSyncStatus->SetForegroundColour(wxColour(200, 150, 0));
+        int nPercent = (nHighestPeerHeight > 0) ? (nBestHeight * 100 / nHighestPeerHeight) : 0;
+        m_gaugeSync->SetValue(nPercent);
+        m_staticTextSyncProgress->SetLabel(wxString::Format(_("%d / %d blocks"), nBestHeight + 1, nHighestPeerHeight));
+    }
+    else
+    {
+        m_staticTextSyncStatus->SetLabel(_("Synced"));
+        m_staticTextSyncStatus->SetForegroundColour(wxColour(40, 160, 40));
+        m_gaugeSync->SetValue(100);
+        m_staticTextSyncProgress->SetLabel(wxString::Format(_("%d blocks"), nBestHeight + 1));
+    }
 
     // Update receiving address
     string strDefaultAddress = PubKeyToAddress(vchDefaultKey);
@@ -1453,11 +1492,11 @@ COptionsDialog::COptionsDialog(wxWindow* parent) : COptionsDialogBase(parent)
     m_textCtrlTransactionFee->SetValue(FormatMoney(nTransactionFee));
     m_checkBoxLimitProcessors->SetValue(fLimitProcessors);
     m_spinCtrlLimitProcessors->Enable(fLimitProcessors);
-    m_spinCtrlLimitProcessors->SetValue(nLimitProcessors);
     int nProcessors = wxThread::GetCPUCount();
     if (nProcessors < 1)
         nProcessors = 999;
     m_spinCtrlLimitProcessors->SetRange(1, nProcessors);
+    m_spinCtrlLimitProcessors->SetValue(nLimitProcessors);
     m_checkBoxStartOnSystemStartup->SetValue(fTmpStartOnSystemStartup = GetStartOnSystemStartup());
     m_checkBoxMinimizeToTray->SetValue(fMinimizeToTray);
     m_checkBoxMinimizeOnClose->SetValue(fMinimizeOnClose);
@@ -1920,8 +1959,6 @@ void CSendingDialog::OnPaint(wxPaintEvent& event)
 void CSendingDialog::Repaint()
 {
     Refresh();
-    wxPaintEvent event;
-    GetEventHandler()->AddPendingEvent(event);
 }
 
 bool CSendingDialog::Status()
@@ -2426,19 +2463,37 @@ void CMyTaskBarIcon::Show(bool fShow)
     static char pszPrevTip[200];
     if (fShow)
     {
-        string strTooltip = _("Bitcoin");
-        if (fGenerateBitcoins)
-            strTooltip = _("Bitcoin - Generating");
-        if (fGenerateBitcoins && vNodes.empty())
-            strTooltip = _("Bitcoin - (not connected)");
+        int nNumConnections = 0;
+        int nHighestPeerHeight = 0;
+        CRITICAL_BLOCK(cs_vNodes)
+        {
+            nNumConnections = vNodes.size();
+            foreach(CNode* pnode, vNodes)
+                if (pnode->nStartingHeight > nHighestPeerHeight)
+                    nHighestPeerHeight = pnode->nStartingHeight;
+        }
 
-        // Optimization, only update when changed, using char array to be reentrant
+        string strTooltip;
+        if (nNumConnections == 0)
+            strTooltip = strprintf(_("BitcoinOG - Offline (%d blocks)"), nBestHeight + 1);
+        else if (nHighestPeerHeight > 0 && nBestHeight < nHighestPeerHeight - 5)
+            strTooltip = strprintf(_("BitcoinOG - Syncing %d/%d"), nBestHeight + 1, nHighestPeerHeight);
+        else
+            strTooltip = strprintf(_("BitcoinOG - %d blocks"), nBestHeight + 1);
+
+        if (fGenerateBitcoins)
+        {
+            int nMinerThreads = vnThreadsRunning[3];
+            if (nMinerThreads > 0)
+                strTooltip += strprintf(_(" [Mining %d]"), nMinerThreads);
+            else
+                strTooltip += _(" [Mining]");
+        }
+
         if (strncmp(pszPrevTip, strTooltip.c_str(), sizeof(pszPrevTip)-1) != 0)
         {
             strlcpy(pszPrevTip, strTooltip.c_str(), sizeof(pszPrevTip));
 #ifdef __WXMSW__
-            // somehow it'll choose the wrong size and scale it down if
-            // we use the main icon, so we hand it one with only 16x16
             SetIcon(wxICON(favicon), strTooltip);
 #else
             SetIcon(bitcoin80_xpm, strTooltip);
@@ -2541,3 +2596,5 @@ void CreateMainWindow()
     ptaskbaricon->Show(fMinimizeToTray || fClosedToTray);
     CreateThread(ThreadDelayedRepaint, NULL);
 }
+
+#endif // wxUSE_GUI

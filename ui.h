@@ -3,7 +3,11 @@
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
 #if wxUSE_GUI
+#if wxCHECK_VERSION(3, 0, 0)
+wxDECLARE_EVENT(wxEVT_UITHREADCALL, wxCommandEvent);
+#else
 DECLARE_EVENT_TYPE(wxEVT_UITHREADCALL, -1)
+#endif
 #endif
 
 #if wxUSE_GUI

@@ -753,6 +753,11 @@ bool AppInit(int argc, char* argv[])
         return false;
     }
 
+    printf("Loading addresses...\n");
+    if (!LoadAddresses())
+        fprintf(stderr, "Warning: Error loading addresses\n");
+
+    printf("Loading block index...\n");
     if (!LoadBlockIndex())
     {
         fprintf(stderr, "Error loading block index\n");

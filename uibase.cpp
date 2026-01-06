@@ -52,12 +52,13 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	this->SetMenuBar( m_menubar );
 	
 	m_toolBar = this->CreateToolBar( wxTB_FLAT|wxTB_HORZ_TEXT, wxID_ANY );
-	m_toolBar->SetToolBitmapSize( wxSize( 20,20 ) );
-	m_toolBar->SetToolSeparation( 1 );
-	m_toolBar->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 90, false, wxEmptyString ) );
-	
-	m_toolBar->AddTool( wxID_BUTTONSEND, _("Send Coins"), wxBitmap( send20_xpm ), wxNullBitmap, wxITEM_NORMAL, wxEmptyString, wxEmptyString );
-	m_toolBar->AddTool( wxID_BUTTONRECEIVE, _("Address Book"), wxBitmap( addressbook20_xpm ), wxNullBitmap, wxITEM_NORMAL, wxEmptyString, wxEmptyString );
+	m_toolBar->SetToolBitmapSize( wxSize( 24,24 ) );
+	m_toolBar->SetToolSeparation( 8 );
+	m_toolBar->SetFont( wxFont( 10, 70, 90, 92, false, wxEmptyString ) );
+	m_toolBar->SetMargins( 8, 8 );
+
+	m_toolBar->AddTool( wxID_BUTTONSEND, _("  Send Coins  "), wxBitmap( send20_xpm ), wxNullBitmap, wxITEM_NORMAL, _("Send coins to another address"), wxEmptyString );
+	m_toolBar->AddTool( wxID_BUTTONRECEIVE, _("  Address Book  "), wxBitmap( addressbook20_xpm ), wxNullBitmap, wxITEM_NORMAL, _("Manage your address book"), wxEmptyString );
 	m_toolBar->Realize();
 	
 	m_statusBar = this->CreateStatusBar( 1, wxST_SIZEGRIP, wxID_ANY );
@@ -65,48 +66,51 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	wxBoxSizer* bSizer2;
 	bSizer2 = new wxBoxSizer( wxVERTICAL );
-	
-	
-	bSizer2->Add( 0, 2, 0, wxEXPAND, 5 );
-	
+
+
+	bSizer2->Add( 0, 10, 0, wxEXPAND, 5 );
+
 	wxBoxSizer* bSizer85;
 	bSizer85 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	m_staticText32 = new wxStaticText( this, wxID_ANY, _("Your Bitcoin Address:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText32->Wrap( -1 );
-	bSizer85->Add( m_staticText32, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 5 );
-	
-	m_textCtrlAddress = new wxTextCtrl( this, wxID_TEXTCTRLADDRESS, wxEmptyString, wxDefaultPosition, wxSize( 340,-1 ), wxTE_READONLY );
-	bSizer85->Add( m_textCtrlAddress, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT|wxLEFT, 5 );
-	
-	m_buttonNew = new wxButton( this, wxID_BUTTONNEW, _(" &New... "), wxDefaultPosition, wxSize( -1,-1 ), wxBU_EXACTFIT );
+	m_staticText32->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer85->Add( m_staticText32, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 10 );
+
+	m_textCtrlAddress = new wxTextCtrl( this, wxID_TEXTCTRLADDRESS, wxEmptyString, wxDefaultPosition, wxSize( 380,28 ), wxTE_READONLY );
+	m_textCtrlAddress->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer85->Add( m_textCtrlAddress, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT|wxLEFT, 8 );
+
+	m_buttonNew = new wxButton( this, wxID_BUTTONNEW, _("&New..."), wxDefaultPosition, wxSize( 90,32 ), 0 );
 	bSizer85->Add( m_buttonNew, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 5 );
-	
-	m_buttonCopy = new wxButton( this, wxID_BUTTONCOPY, _(" &Copy to Clipboard "), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
-	bSizer85->Add( m_buttonCopy, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 5 );
-	
-	
+
+	m_buttonCopy = new wxButton( this, wxID_BUTTONCOPY, _("&Copy to Clipboard"), wxDefaultPosition, wxSize( 140,32 ), 0 );
+	bSizer85->Add( m_buttonCopy, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 10 );
+
+
 	bSizer85->Add( 0, 0, 0, wxEXPAND, 5 );
-	
+
 	bSizer2->Add( bSizer85, 0, wxEXPAND|wxRIGHT|wxLEFT, 5 );
 	
 	wxBoxSizer* bSizer3;
 	bSizer3 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	wxBoxSizer* bSizer66;
 	bSizer66 = new wxBoxSizer( wxHORIZONTAL );
-	
-	m_staticText41 = new wxStaticText( this, wxID_ANY, _("Balance:"), wxDefaultPosition, wxSize( -1,15 ), 0 );
+
+	m_staticText41 = new wxStaticText( this, wxID_ANY, _("Balance:"), wxDefaultPosition, wxSize( -1,24 ), 0 );
 	m_staticText41->Wrap( -1 );
-	bSizer66->Add( m_staticText41, 0, wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxLEFT, 5 );
-	
-	m_staticTextBalance = new wxStaticText( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 120,15 ), wxALIGN_RIGHT|wxST_NO_AUTORESIZE );
+	m_staticText41->SetFont( wxFont( 11, 70, 90, 92, false, wxEmptyString ) );
+	bSizer66->Add( m_staticText41, 0, wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxLEFT, 8 );
+
+	m_staticTextBalance = new wxStaticText( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 180,28 ), wxALIGN_RIGHT|wxST_NO_AUTORESIZE );
 	m_staticTextBalance->Wrap( -1 );
-	m_staticTextBalance->SetFont( wxFont( 8, 70, 90, 90, false, wxEmptyString ) );
+	m_staticTextBalance->SetFont( wxFont( 12, 70, 90, 92, false, wxEmptyString ) );
 	m_staticTextBalance->SetBackgroundColour( wxColour( 255, 255, 255 ) );
-	
-	bSizer66->Add( m_staticTextBalance, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
+
+	bSizer66->Add( m_staticTextBalance, 0, wxALIGN_CENTER_VERTICAL|wxALL, 8 );
+
 	bSizer3->Add( bSizer66, 1, wxEXPAND|wxALL, 5 );
 	
 	
@@ -114,15 +118,16 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	
 	wxString m_choiceFilterChoices[] = { _(" All"), _(" Sent"), _(" Received"), _(" In Progress") };
 	int m_choiceFilterNChoices = sizeof( m_choiceFilterChoices ) / sizeof( wxString );
-	m_choiceFilter = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxSize( 110,-1 ), m_choiceFilterNChoices, m_choiceFilterChoices, 0 );
+	m_choiceFilter = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxSize( 130,28 ), m_choiceFilterNChoices, m_choiceFilterChoices, 0 );
 	m_choiceFilter->SetSelection( 0 );
 	m_choiceFilter->Hide();
-	
-	bSizer3->Add( m_choiceFilter, 0, wxALIGN_BOTTOM|wxTOP|wxRIGHT|wxLEFT, 5 );
-	
+
+	bSizer3->Add( m_choiceFilter, 0, wxALIGN_BOTTOM|wxTOP|wxRIGHT|wxLEFT, 8 );
+
 	bSizer2->Add( bSizer3, 0, wxEXPAND, 5 );
-	
+
 	m_notebook = new wxNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	m_notebook->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
 	m_panel9 = new wxPanel( m_notebook, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer11;
 	bSizer11 = new wxBoxSizer( wxVERTICAL );
@@ -167,9 +172,30 @@ CMainFrameBase::CMainFrameBase( wxWindow* parent, wxWindowID id, const wxString&
 	m_panel93->Layout();
 	bSizer113->Fit( m_panel93 );
 	m_notebook->AddPage( m_panel93, _("Received"), false );
-	
-	bSizer2->Add( m_notebook, 1, wxEXPAND, 5 );
-	
+
+	bSizer2->Add( m_notebook, 1, wxEXPAND|wxALL, 8 );
+
+	m_panelSync = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxSize( -1, 36 ), wxTAB_TRAVERSAL );
+	m_panelSync->SetBackgroundColour( wxColour( 245, 245, 245 ) );
+	wxBoxSizer* bSizerSync = new wxBoxSizer( wxHORIZONTAL );
+
+	m_staticTextSyncStatus = new wxStaticText( m_panelSync, wxID_ANY, _("Connecting..."), wxDefaultPosition, wxSize( 100, -1 ), 0 );
+	m_staticTextSyncStatus->SetFont( wxFont( 9, 70, 90, 92, false, wxEmptyString ) );
+	bSizerSync->Add( m_staticTextSyncStatus, 0, wxALIGN_CENTER_VERTICAL|wxLEFT, 10 );
+
+	m_gaugeSync = new wxGauge( m_panelSync, wxID_ANY, 100, wxDefaultPosition, wxSize( 200, 16 ), wxGA_HORIZONTAL|wxGA_SMOOTH );
+	m_gaugeSync->SetValue( 0 );
+	bSizerSync->Add( m_gaugeSync, 0, wxALIGN_CENTER_VERTICAL|wxLEFT|wxRIGHT, 10 );
+
+	m_staticTextSyncProgress = new wxStaticText( m_panelSync, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 150, -1 ), 0 );
+	m_staticTextSyncProgress->SetFont( wxFont( 9, 70, 90, 90, false, wxEmptyString ) );
+	bSizerSync->Add( m_staticTextSyncProgress, 1, wxALIGN_CENTER_VERTICAL|wxRIGHT, 10 );
+
+	m_panelSync->SetSizer( bSizerSync );
+	m_panelSync->Layout();
+
+	bSizer2->Add( m_panelSync, 0, wxEXPAND|wxLEFT|wxRIGHT|wxBOTTOM, 8 );
+
 	this->SetSizer( bSizer2 );
 	this->Layout();
 	
@@ -293,25 +319,25 @@ CMainFrameBase::~CMainFrameBase()
 
 CTxDetailsDialogBase::CTxDetailsDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+	this->SetSizeHints( wxSize( 500,350 ), wxDefaultSize );
+
 	wxBoxSizer* bSizer64;
 	bSizer64 = new wxBoxSizer( wxVERTICAL );
-	
+
 	wxBoxSizer* bSizer66;
 	bSizer66 = new wxBoxSizer( wxVERTICAL );
-	
+
 	m_htmlWin = new wxHtmlWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxHW_SCROLLBAR_AUTO );
-	bSizer66->Add( m_htmlWin, 1, wxALL|wxEXPAND, 5 );
-	
+	bSizer66->Add( m_htmlWin, 1, wxALL|wxEXPAND, 10 );
+
 	bSizer64->Add( bSizer66, 1, wxEXPAND, 5 );
-	
+
 	wxBoxSizer* bSizer65;
 	bSizer65 = new wxBoxSizer( wxHORIZONTAL );
-	
-	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer65->Add( m_buttonOK, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
+
+	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( 100,32 ), 0 );
+	bSizer65->Add( m_buttonOK, 0, wxALL|wxEXPAND, 10 );
+
 	bSizer64->Add( bSizer65, 0, wxALIGN_RIGHT, 5 );
 	
 	this->SetSizer( bSizer64 );
@@ -329,110 +355,119 @@ CTxDetailsDialogBase::~CTxDetailsDialogBase()
 
 COptionsDialogBase::COptionsDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+	this->SetSizeHints( wxSize( 500,320 ), wxDefaultSize );
+
 	wxBoxSizer* bSizer55;
 	bSizer55 = new wxBoxSizer( wxVERTICAL );
-	
+
 	wxBoxSizer* bSizer66;
 	bSizer66 = new wxBoxSizer( wxHORIZONTAL );
-	
-	m_listBox = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxSize( 110,-1 ), 0, NULL, wxLB_NEEDED_SB|wxLB_SINGLE ); 
-	bSizer66->Add( m_listBox, 0, wxEXPAND|wxRIGHT, 5 );
-	
+
+	m_listBox = new wxListBox( this, wxID_ANY, wxDefaultPosition, wxSize( 140,-1 ), 0, NULL, wxLB_NEEDED_SB|wxLB_SINGLE );
+	m_listBox->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer66->Add( m_listBox, 0, wxEXPAND|wxRIGHT, 10 );
+
 	m_scrolledWindow = new wxScrolledWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
 	m_scrolledWindow->SetScrollRate( 5, 5 );
 	wxBoxSizer* bSizer63;
 	bSizer63 = new wxBoxSizer( wxVERTICAL );
-	
+
 	m_panelMain = new wxPanel( m_scrolledWindow, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer69;
 	bSizer69 = new wxBoxSizer( wxVERTICAL );
-	
-	
-	bSizer69->Add( 0, 16, 0, wxEXPAND, 5 );
-	
+
+
+	bSizer69->Add( 0, 20, 0, wxEXPAND, 5 );
+
 	m_staticText32 = new wxStaticText( m_panelMain, wxID_ANY, _("Optional transaction fee you give to the nodes that process your transactions."), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText32->Wrap( -1 );
 	m_staticText32->Hide();
-	
-	bSizer69->Add( m_staticText32, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
+
+	bSizer69->Add( m_staticText32, 0, wxALL, 8 );
+
 	wxBoxSizer* bSizer56;
 	bSizer56 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	m_staticText31 = new wxStaticText( m_panelMain, wxID_ANY, _("Transaction fee:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText31->Wrap( -1 );
 	m_staticText31->Hide();
-	
-	bSizer56->Add( m_staticText31, 0, wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxLEFT, 5 );
-	
-	m_textCtrlTransactionFee = new wxTextCtrl( m_panelMain, wxID_TRANSACTIONFEE, wxEmptyString, wxDefaultPosition, wxSize( 70,-1 ), 0 );
+
+	bSizer56->Add( m_staticText31, 0, wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxLEFT, 8 );
+
+	m_textCtrlTransactionFee = new wxTextCtrl( m_panelMain, wxID_TRANSACTIONFEE, wxEmptyString, wxDefaultPosition, wxSize( 100,28 ), 0 );
 	m_textCtrlTransactionFee->Hide();
-	
-	bSizer56->Add( m_textCtrlTransactionFee, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
+
+	bSizer56->Add( m_textCtrlTransactionFee, 0, wxALL|wxALIGN_CENTER_VERTICAL, 8 );
+
 	bSizer69->Add( bSizer56, 0, wxEXPAND, 5 );
-	
+
 	wxBoxSizer* bSizer71;
 	bSizer71 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	m_checkBoxLimitProcessors = new wxCheckBox( m_panelMain, wxID_ANY, _("&Limit coin generation to"), wxDefaultPosition, wxDefaultSize, 0 );
-	
-	bSizer71->Add( m_checkBoxLimitProcessors, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
-	m_spinCtrlLimitProcessors = new wxSpinCtrl( m_panelMain, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 48,-1 ), wxSP_ARROW_KEYS, 1, 999, 1 );
-	bSizer71->Add( m_spinCtrlLimitProcessors, 0, wxALIGN_CENTER_VERTICAL, 5 );
-	
+	m_checkBoxLimitProcessors->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+
+	bSizer71->Add( m_checkBoxLimitProcessors, 0, wxALIGN_CENTER_VERTICAL|wxALL, 8 );
+
+	m_spinCtrlLimitProcessors = new wxSpinCtrl( m_panelMain, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 80,-1 ), wxSP_ARROW_KEYS, 1, 999, 1 );
+	bSizer71->Add( m_spinCtrlLimitProcessors, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT, 8 );
+
 	m_staticText35 = new wxStaticText( m_panelMain, wxID_ANY, _("processors"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText35->Wrap( -1 );
-	bSizer71->Add( m_staticText35, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
+	m_staticText35->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer71->Add( m_staticText35, 0, wxALIGN_CENTER_VERTICAL|wxALL, 8 );
+
 	bSizer69->Add( bSizer71, 0, 0, 5 );
-	
+
 	m_checkBoxStartOnSystemStartup = new wxCheckBox( m_panelMain, wxID_ANY, _("&Start Bitcoin on system startup"), wxDefaultPosition, wxDefaultSize, 0 );
-	
-	bSizer69->Add( m_checkBoxStartOnSystemStartup, 0, wxALL, 5 );
-	
+	m_checkBoxStartOnSystemStartup->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+
+	bSizer69->Add( m_checkBoxStartOnSystemStartup, 0, wxALL, 8 );
+
 	m_checkBoxMinimizeToTray = new wxCheckBox( m_panelMain, wxID_ANY, _("&Minimize to the tray instead of the taskbar"), wxDefaultPosition, wxDefaultSize, 0 );
-	
-	bSizer69->Add( m_checkBoxMinimizeToTray, 0, wxALL, 5 );
-	
+	m_checkBoxMinimizeToTray->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+
+	bSizer69->Add( m_checkBoxMinimizeToTray, 0, wxALL, 8 );
+
 	m_checkBoxMinimizeOnClose = new wxCheckBox( m_panelMain, wxID_ANY, _("M&inimize to the tray on close"), wxDefaultPosition, wxDefaultSize, 0 );
-	
-	bSizer69->Add( m_checkBoxMinimizeOnClose, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
+	m_checkBoxMinimizeOnClose->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+
+	bSizer69->Add( m_checkBoxMinimizeOnClose, 0, wxALL, 8 );
+
 	wxBoxSizer* bSizer102;
 	bSizer102 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	m_checkBoxUseProxy = new wxCheckBox( m_panelMain, wxID_ANY, _("&Connect through socks4 proxy: "), wxDefaultPosition, wxDefaultSize, 0 );
-	
-	bSizer102->Add( m_checkBoxUseProxy, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
+	m_checkBoxUseProxy->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+
+	bSizer102->Add( m_checkBoxUseProxy, 0, wxALL|wxALIGN_CENTER_VERTICAL, 8 );
+
 	bSizer69->Add( bSizer102, 1, wxEXPAND, 5 );
-	
+
 	wxBoxSizer* bSizer103;
 	bSizer103 = new wxBoxSizer( wxHORIZONTAL );
-	
-	
-	bSizer103->Add( 18, 0, 0, 0, 5 );
-	
+
+
+	bSizer103->Add( 24, 0, 0, 0, 5 );
+
 	m_staticTextProxyIP = new wxStaticText( m_panelMain, wxID_ANY, _("Proxy &IP:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextProxyIP->Wrap( -1 );
-	bSizer103->Add( m_staticTextProxyIP, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
-	m_textCtrlProxyIP = new wxTextCtrl( m_panelMain, wxID_PROXYIP, wxEmptyString, wxDefaultPosition, wxSize( 140,-1 ), 0 );
-	m_textCtrlProxyIP->SetMaxLength( 15 ); 
+	m_staticTextProxyIP->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer103->Add( m_staticTextProxyIP, 0, wxALL|wxALIGN_CENTER_VERTICAL, 8 );
+
+	m_textCtrlProxyIP = new wxTextCtrl( m_panelMain, wxID_PROXYIP, wxEmptyString, wxDefaultPosition, wxSize( 160,28 ), 0 );
+	m_textCtrlProxyIP->SetMaxLength( 15 );
 	bSizer103->Add( m_textCtrlProxyIP, 0, wxALIGN_CENTER_VERTICAL, 5 );
-	
+
 	m_staticTextProxyPort = new wxStaticText( m_panelMain, wxID_ANY, _(" &Port:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextProxyPort->Wrap( -1 );
-	bSizer103->Add( m_staticTextProxyPort, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
-	m_textCtrlProxyPort = new wxTextCtrl( m_panelMain, wxID_PROXYPORT, wxEmptyString, wxDefaultPosition, wxSize( 55,-1 ), 0 );
-	m_textCtrlProxyPort->SetMaxLength( 5 ); 
+	m_staticTextProxyPort->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer103->Add( m_staticTextProxyPort, 0, wxALL|wxALIGN_CENTER_VERTICAL, 8 );
+
+	m_textCtrlProxyPort = new wxTextCtrl( m_panelMain, wxID_PROXYPORT, wxEmptyString, wxDefaultPosition, wxSize( 70,28 ), 0 );
+	m_textCtrlProxyPort->SetMaxLength( 5 );
 	bSizer103->Add( m_textCtrlProxyPort, 0, wxALIGN_CENTER_VERTICAL, 5 );
-	
+
 	bSizer69->Add( bSizer103, 1, wxEXPAND, 5 );
 	
 	m_panelMain->SetSizer( bSizer69 );
@@ -449,7 +484,7 @@ COptionsDialogBase::COptionsDialogBase( wxWindow* parent, wxWindowID id, const w
 	
 	m_staticText321 = new wxStaticText( m_panelTest2, wxID_ANY, _("// [don't translate] Test panel 2 for future expansion"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText321->Wrap( -1 );
-	bSizer64->Add( m_staticText321, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	bSizer64->Add( m_staticText321, 0, wxALL, 5 );
 	
 	m_staticText69 = new wxStaticText( m_panelTest2, wxID_ANY, _("// [don't translate] Let's not start multiple pages until the first page is filled up"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText69->Wrap( -1 );
@@ -464,21 +499,21 @@ COptionsDialogBase::COptionsDialogBase( wxWindow* parent, wxWindowID id, const w
 	m_scrolledWindow->Layout();
 	bSizer63->Fit( m_scrolledWindow );
 	bSizer66->Add( m_scrolledWindow, 1, wxEXPAND|wxLEFT, 5 );
-	
-	bSizer55->Add( bSizer66, 1, wxEXPAND|wxALL, 9 );
-	
+
+	bSizer55->Add( bSizer66, 1, wxEXPAND|wxALL, 12 );
+
 	wxBoxSizer* bSizer58;
 	bSizer58 = new wxBoxSizer( wxHORIZONTAL );
-	
-	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer58->Add( m_buttonOK, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer58->Add( m_buttonCancel, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonApply = new wxButton( this, wxID_APPLY, _("&Apply"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer58->Add( m_buttonApply, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
+
+	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer58->Add( m_buttonOK, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer58->Add( m_buttonCancel, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonApply = new wxButton( this, wxID_APPLY, _("&Apply"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer58->Add( m_buttonApply, 0, wxALL|wxEXPAND, 6 );
+
 	bSizer55->Add( bSizer58, 0, wxALIGN_RIGHT, 5 );
 	
 	this->SetSizer( bSizer55 );
@@ -514,69 +549,70 @@ COptionsDialogBase::~COptionsDialogBase()
 
 CAboutDialogBase::CAboutDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+	this->SetSizeHints( wxSize( 480,300 ), wxDefaultSize );
+
 	wxBoxSizer* bSizer63;
 	bSizer63 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	m_bitmap = new wxStaticBitmap( this, wxID_ANY, wxBitmap( about_xpm ), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer63->Add( m_bitmap, 0, 0, 5 );
-	
+	bSizer63->Add( m_bitmap, 0, wxALL, 5 );
+
 	wxBoxSizer* bSizer60;
 	bSizer60 = new wxBoxSizer( wxVERTICAL );
-	
+
 	wxBoxSizer* bSizer62;
 	bSizer62 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	wxBoxSizer* bSizer631;
 	bSizer631 = new wxBoxSizer( wxVERTICAL );
-	
-	
-	bSizer631->Add( 0, 65, 0, wxEXPAND, 5 );
-	
+
+
+	bSizer631->Add( 0, 60, 0, wxEXPAND, 5 );
+
 	wxBoxSizer* bSizer64;
 	bSizer64 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	m_staticText40 = new wxStaticText( this, wxID_ANY, _("Bitcoin "), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText40->Wrap( -1 );
-	m_staticText40->SetFont( wxFont( 10, 74, 90, 92, false, wxT("Tahoma") ) );
-	
-	bSizer64->Add( m_staticText40, 0, wxALIGN_BOTTOM|wxTOP|wxBOTTOM|wxLEFT, 5 );
-	
+	m_staticText40->SetFont( wxFont( 12, 74, 90, 92, false, wxEmptyString ) );
+
+	bSizer64->Add( m_staticText40, 0, wxALIGN_BOTTOM|wxTOP|wxBOTTOM|wxLEFT, 8 );
+
 	m_staticTextVersion = new wxStaticText( this, wxID_ANY, _("version"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextVersion->Wrap( -1 );
-	m_staticTextVersion->SetFont( wxFont( 10, 74, 90, 90, false, wxT("Tahoma") ) );
-	
-	bSizer64->Add( m_staticTextVersion, 0, wxALIGN_BOTTOM|wxTOP|wxBOTTOM|wxRIGHT, 5 );
-	
+	m_staticTextVersion->SetFont( wxFont( 11, 74, 90, 90, false, wxEmptyString ) );
+
+	bSizer64->Add( m_staticTextVersion, 0, wxALIGN_BOTTOM|wxTOP|wxBOTTOM|wxRIGHT, 8 );
+
 	bSizer631->Add( bSizer64, 0, wxEXPAND, 5 );
-	
-	
-	bSizer631->Add( 0, 4, 0, wxEXPAND, 5 );
-	
+
+
+	bSizer631->Add( 0, 8, 0, wxEXPAND, 5 );
+
 	m_staticTextMain = new wxStaticText( this, wxID_ANY, _("Copyright (c) 2009-2010 Satoshi Nakamoto.\n\nDistributed under the MIT/X11 software license, see the accompanying file \nlicense.txt or http://www.opensource.org/licenses/mit-license.php.\n\nThis product includes software developed by the OpenSSL Project for use in the \nOpenSSL Toolkit (http://www.openssl.org/) and cryptographic software written by \nEric Young (eay@cryptsoft.com)."), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextMain->Wrap( -1 );
-	bSizer631->Add( m_staticTextMain, 0, wxALL, 5 );
-	
-	
+	m_staticTextMain->SetFont( wxFont( 9, 70, 90, 90, false, wxEmptyString ) );
+	bSizer631->Add( m_staticTextMain, 0, wxALL, 8 );
+
+
 	bSizer631->Add( 0, 0, 0, wxEXPAND, 5 );
-	
+
 	bSizer62->Add( bSizer631, 1, wxEXPAND, 5 );
-	
+
 	bSizer60->Add( bSizer62, 1, wxEXPAND, 5 );
-	
+
 	wxBoxSizer* bSizer61;
 	bSizer61 = new wxBoxSizer( wxHORIZONTAL );
-	
-	
+
+
 	bSizer61->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer61->Add( m_buttonOK, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 6 );
-	
-	bSizer60->Add( bSizer61, 0, wxALIGN_RIGHT|wxEXPAND|wxRIGHT, 2 );
-	
-	bSizer63->Add( bSizer60, 1, wxEXPAND|wxLEFT, 5 );
+
+	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( 100,32 ), 0 );
+	bSizer61->Add( m_buttonOK, 0, wxALL|wxEXPAND, 10 );
+
+	bSizer60->Add( bSizer61, 0, wxEXPAND|wxRIGHT, 5 );
+
+	bSizer63->Add( bSizer60, 1, wxEXPAND|wxLEFT, 8 );
 	
 	this->SetSizer( bSizer63 );
 	this->Layout();
@@ -593,71 +629,75 @@ CAboutDialogBase::~CAboutDialogBase()
 
 CSendDialogBase::CSendDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+	this->SetSizeHints( wxSize( 550,300 ), wxDefaultSize );
+
 	wxBoxSizer* bSizer21;
 	bSizer21 = new wxBoxSizer( wxVERTICAL );
-	
-	
-	bSizer21->Add( 0, 5, 0, wxEXPAND, 5 );
-	
+
+
+	bSizer21->Add( 0, 10, 0, wxEXPAND, 5 );
+
 	wxFlexGridSizer* fgSizer1;
 	fgSizer1 = new wxFlexGridSizer( 0, 2, 0, 0 );
 	fgSizer1->AddGrowableCol( 1 );
 	fgSizer1->SetFlexibleDirection( wxBOTH );
 	fgSizer1->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
-	
-	
+
+
 	fgSizer1->Add( 0, 0, 0, wxEXPAND, 5 );
-	
+
 	m_staticTextInstructions = new wxStaticText( this, wxID_ANY, _("Enter a Bitcoin address (e.g. 1NS17iag9jJgTHD1VXjvLCEnZuQ3rJED9L) or IP address (e.g. 123.45.6.7)"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextInstructions->Wrap( -1 );
-	fgSizer1->Add( m_staticTextInstructions, 0, wxTOP|wxRIGHT|wxLEFT, 5 );
-	
+	m_staticTextInstructions->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	fgSizer1->Add( m_staticTextInstructions, 0, wxTOP|wxRIGHT|wxLEFT, 8 );
+
 	wxBoxSizer* bSizer47;
 	bSizer47 = new wxBoxSizer( wxHORIZONTAL );
-	
-	bSizer47->SetMinSize( wxSize( 70,-1 ) ); 
-	
+
+	bSizer47->SetMinSize( wxSize( 80,-1 ) );
+
 	bSizer47->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_bitmapCheckMark = new wxStaticBitmap( this, wxID_ANY, wxBitmap( check_xpm ), wxDefaultPosition, wxSize( 16,16 ), 0 );
-	bSizer47->Add( m_bitmapCheckMark, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
+
+	m_bitmapCheckMark = new wxStaticBitmap( this, wxID_ANY, wxBitmap( check_xpm ), wxDefaultPosition, wxSize( 20,20 ), 0 );
+	bSizer47->Add( m_bitmapCheckMark, 0, wxALL|wxALIGN_CENTER_VERTICAL, 6 );
+
 	m_staticText36 = new wxStaticText( this, wxID_ANY, _("Pay &To:"), wxDefaultPosition, wxSize( -1,-1 ), wxALIGN_RIGHT );
 	m_staticText36->Wrap( -1 );
-	bSizer47->Add( m_staticText36, 0, wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxLEFT, 5 );
-	
+	m_staticText36->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer47->Add( m_staticText36, 0, wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxLEFT, 8 );
+
 	fgSizer1->Add( bSizer47, 1, wxEXPAND|wxLEFT, 5 );
-	
+
 	wxBoxSizer* bSizer19;
 	bSizer19 = new wxBoxSizer( wxHORIZONTAL );
-	
-	m_textCtrlAddress = new wxTextCtrl( this, wxID_TEXTCTRLPAYTO, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer19->Add( m_textCtrlAddress, 1, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
+
+	m_textCtrlAddress = new wxTextCtrl( this, wxID_TEXTCTRLPAYTO, wxEmptyString, wxDefaultPosition, wxSize( -1,28 ), 0 );
+	m_textCtrlAddress->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer19->Add( m_textCtrlAddress, 1, wxALIGN_CENTER_VERTICAL|wxALL, 6 );
+
 	wxBoxSizer* bSizer66;
 	bSizer66 = new wxBoxSizer( wxHORIZONTAL );
-	
-	m_buttonPaste = new wxButton( this, wxID_BUTTONPASTE, _("&Paste"), wxDefaultPosition, wxSize( -1,-1 ), wxBU_EXACTFIT );
-	bSizer66->Add( m_buttonPaste, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT|wxEXPAND, 5 );
-	
-	m_buttonAddress = new wxButton( this, wxID_BUTTONADDRESSBOOK, _(" Address &Book..."), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer66->Add( m_buttonAddress, 0, wxALIGN_CENTER_VERTICAL|wxRIGHT|wxEXPAND, 5 );
-	
+
+	m_buttonPaste = new wxButton( this, wxID_BUTTONPASTE, _("&Paste"), wxDefaultPosition, wxSize( 80,32 ), 0 );
+	bSizer66->Add( m_buttonPaste, 0, wxRIGHT|wxEXPAND, 5 );
+
+	m_buttonAddress = new wxButton( this, wxID_BUTTONADDRESSBOOK, _("Address &Book..."), wxDefaultPosition, wxSize( 130,32 ), 0 );
+	bSizer66->Add( m_buttonAddress, 0, wxRIGHT|wxEXPAND, 8 );
+
 	bSizer19->Add( bSizer66, 0, wxALIGN_CENTER_VERTICAL, 5 );
-	
+
 	fgSizer1->Add( bSizer19, 1, wxEXPAND|wxRIGHT, 5 );
-	
+
 	m_staticText19 = new wxStaticText( this, wxID_ANY, _("&Amount:"), wxDefaultPosition, wxSize( -1,-1 ), wxALIGN_RIGHT );
 	m_staticText19->Wrap( -1 );
-	fgSizer1->Add( m_staticText19, 0, wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxLEFT|wxALIGN_RIGHT, 5 );
-	
-	m_textCtrlAmount = new wxTextCtrl( this, wxID_TEXTCTRLAMOUNT, wxEmptyString, wxDefaultPosition, wxSize( 145,-1 ), 0 );
-	m_textCtrlAmount->SetMaxLength( 20 ); 
-	m_textCtrlAmount->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 90, false, wxEmptyString ) );
-	
-	fgSizer1->Add( m_textCtrlAmount, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	m_staticText19->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	fgSizer1->Add( m_staticText19, 0, wxALIGN_CENTER_VERTICAL|wxTOP|wxBOTTOM|wxLEFT|wxALIGN_RIGHT, 8 );
+
+	m_textCtrlAmount = new wxTextCtrl( this, wxID_TEXTCTRLAMOUNT, wxEmptyString, wxDefaultPosition, wxSize( 170,28 ), 0 );
+	m_textCtrlAmount->SetMaxLength( 20 );
+	m_textCtrlAmount->SetFont( wxFont( 11, 70, 90, 90, false, wxEmptyString ) );
+
+	fgSizer1->Add( m_textCtrlAmount, 0, wxALIGN_CENTER_VERTICAL|wxALL, 6 );
 	
 	m_staticText20 = new wxStaticText( this, wxID_ANY, _("T&ransfer:"), wxDefaultPosition, wxSize( -1,-1 ), wxALIGN_RIGHT );
 	m_staticText20->Wrap( -1 );
@@ -679,56 +719,60 @@ CSendDialogBase::CSendDialogBase( wxWindow* parent, wxWindowID id, const wxStrin
 	
 	fgSizer1->Add( 0, 0, 0, wxEXPAND, 5 );
 	
-	bSizer21->Add( fgSizer1, 0, wxEXPAND|wxLEFT, 5 );
-	
+	bSizer21->Add( fgSizer1, 0, wxEXPAND|wxLEFT, 8 );
+
 	wxBoxSizer* bSizer672;
 	bSizer672 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	wxBoxSizer* bSizer681;
 	bSizer681 = new wxBoxSizer( wxVERTICAL );
-	
+
 	m_staticTextFrom = new wxStaticText( this, wxID_ANY, _("&From:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextFrom->Wrap( -1 );
-	bSizer681->Add( m_staticTextFrom, 0, wxBOTTOM|wxLEFT, 5 );
-	
-	m_textCtrlFrom = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer681->Add( m_textCtrlFrom, 0, wxLEFT|wxEXPAND, 5 );
-	
+	m_staticTextFrom->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer681->Add( m_staticTextFrom, 0, wxBOTTOM|wxLEFT, 8 );
+
+	m_textCtrlFrom = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( -1,28 ), 0 );
+	m_textCtrlFrom->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer681->Add( m_textCtrlFrom, 0, wxLEFT|wxRIGHT|wxEXPAND, 8 );
+
 	bSizer672->Add( bSizer681, 1, wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT, 5 );
-	
+
 	bSizer21->Add( bSizer672, 0, wxEXPAND, 5 );
-	
+
 	wxBoxSizer* bSizer67;
 	bSizer67 = new wxBoxSizer( wxHORIZONTAL );
-	
+
 	wxBoxSizer* bSizer68;
 	bSizer68 = new wxBoxSizer( wxVERTICAL );
-	
+
 	m_staticTextMessage = new wxStaticText( this, wxID_ANY, _("&Message:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextMessage->Wrap( -1 );
-	bSizer68->Add( m_staticTextMessage, 0, wxTOP|wxBOTTOM|wxLEFT, 5 );
-	
+	m_staticTextMessage->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer68->Add( m_staticTextMessage, 0, wxTOP|wxBOTTOM|wxLEFT, 8 );
+
 	m_textCtrlMessage = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE );
-	bSizer68->Add( m_textCtrlMessage, 1, wxEXPAND|wxLEFT, 5 );
-	
+	m_textCtrlMessage->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer68->Add( m_textCtrlMessage, 1, wxEXPAND|wxLEFT|wxRIGHT, 8 );
+
 	bSizer67->Add( bSizer68, 1, wxEXPAND|wxBOTTOM|wxRIGHT|wxLEFT, 5 );
-	
+
 	bSizer21->Add( bSizer67, 1, wxEXPAND, 5 );
-	
+
 	wxBoxSizer* bSizer23;
 	bSizer23 = new wxBoxSizer( wxHORIZONTAL );
-	
-	
+
+
 	bSizer23->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_buttonSend = new wxButton( this, wxID_BUTTONSEND, _("&Send"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	m_buttonSend->SetFont( wxFont( wxNORMAL_FONT->GetPointSize(), 70, 90, 90, false, wxEmptyString ) );
-	
-	bSizer23->Add( m_buttonSend, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer23->Add( m_buttonCancel, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
+
+	m_buttonSend = new wxButton( this, wxID_BUTTONSEND, _("&Send"), wxDefaultPosition, wxSize( 100,32 ), 0 );
+	m_buttonSend->SetFont( wxFont( 10, 70, 90, 92, false, wxEmptyString ) );
+
+	bSizer23->Add( m_buttonSend, 0, wxALL|wxEXPAND, 8 );
+
+	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( 100,32 ), 0 );
+	bSizer23->Add( m_buttonCancel, 0, wxALL|wxEXPAND, 8 );
+
 	bSizer21->Add( bSizer23, 0, wxEXPAND, 5 );
 	
 	this->SetSizer( bSizer21 );
@@ -764,34 +808,36 @@ CSendDialogBase::~CSendDialogBase()
 
 CSendingDialogBase::CSendingDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+	this->SetSizeHints( wxSize( 400,150 ), wxDefaultSize );
+
 	wxBoxSizer* bSizer68;
 	bSizer68 = new wxBoxSizer( wxVERTICAL );
-	
-	m_staticTextSending = new wxStaticText( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( -1,14 ), 0 );
+
+	m_staticTextSending = new wxStaticText( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( -1,20 ), 0 );
 	m_staticTextSending->Wrap( -1 );
-	bSizer68->Add( m_staticTextSending, 0, wxALIGN_CENTER_VERTICAL|wxEXPAND|wxTOP|wxRIGHT|wxLEFT, 8 );
-	
+	m_staticTextSending->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer68->Add( m_staticTextSending, 0, wxEXPAND|wxTOP|wxRIGHT|wxLEFT, 12 );
+
 	m_textCtrlStatus = new wxTextCtrl( this, wxID_ANY, _("\n\nConnecting..."), wxDefaultPosition, wxDefaultSize, wxTE_CENTRE|wxTE_MULTILINE|wxTE_NO_VSCROLL|wxTE_READONLY|wxNO_BORDER );
 	m_textCtrlStatus->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNFACE ) );
-	
-	bSizer68->Add( m_textCtrlStatus, 1, wxEXPAND|wxRIGHT|wxLEFT, 10 );
-	
+	m_textCtrlStatus->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+
+	bSizer68->Add( m_textCtrlStatus, 1, wxEXPAND|wxRIGHT|wxLEFT, 14 );
+
 	wxBoxSizer* bSizer69;
 	bSizer69 = new wxBoxSizer( wxHORIZONTAL );
-	
-	
+
+
 	bSizer69->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_buttonOK = new wxButton( this, wxID_ANY, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+
+	m_buttonOK = new wxButton( this, wxID_ANY, _("OK"), wxDefaultPosition, wxSize( 90,32 ), 0 );
 	m_buttonOK->Enable( false );
-	
-	bSizer69->Add( m_buttonOK, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer69->Add( m_buttonCancel, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
+
+	bSizer69->Add( m_buttonOK, 0, wxALL|wxEXPAND, 8 );
+
+	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer69->Add( m_buttonCancel, 0, wxALL|wxEXPAND, 8 );
+
 	bSizer68->Add( bSizer69, 0, wxEXPAND, 5 );
 	
 	this->SetSizer( bSizer68 );
@@ -815,44 +861,45 @@ CSendingDialogBase::~CSendingDialogBase()
 
 CYourAddressDialogBase::CYourAddressDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+	this->SetSizeHints( wxSize( 550,350 ), wxDefaultSize );
+
 	wxBoxSizer* bSizer68;
 	bSizer68 = new wxBoxSizer( wxVERTICAL );
-	
-	
-	bSizer68->Add( 0, 5, 0, wxEXPAND, 5 );
-	
+
+
+	bSizer68->Add( 0, 10, 0, wxEXPAND, 5 );
+
 	m_staticText45 = new wxStaticText( this, wxID_ANY, _("These are your Bitcoin addresses for receiving payments.  You may want to give a different one to each sender so you can keep track of who is paying you.  The highlighted address is displayed in the main window."), wxDefaultPosition, wxDefaultSize, 0 );
-	m_staticText45->Wrap( 590 );
-	bSizer68->Add( m_staticText45, 0, wxALL, 5 );
-	
+	m_staticText45->Wrap( 620 );
+	m_staticText45->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer68->Add( m_staticText45, 0, wxALL, 10 );
+
 	m_listCtrl = new wxListCtrl( this, wxID_LISTCTRL, wxDefaultPosition, wxDefaultSize, wxLC_NO_SORT_HEADER|wxLC_REPORT|wxLC_SORT_ASCENDING );
-	bSizer68->Add( m_listCtrl, 1, wxALL|wxEXPAND, 5 );
-	
+	bSizer68->Add( m_listCtrl, 1, wxALL|wxEXPAND, 10 );
+
 	wxBoxSizer* bSizer69;
 	bSizer69 = new wxBoxSizer( wxHORIZONTAL );
-	
-	
+
+
 	bSizer69->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_buttonRename = new wxButton( this, wxID_BUTTONRENAME, _("&Edit..."), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer69->Add( m_buttonRename, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonNew = new wxButton( this, wxID_BUTTONNEW, _(" &New Address... "), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer69->Add( m_buttonNew, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonCopy = new wxButton( this, wxID_BUTTONCOPY, _(" &Copy to Clipboard "), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer69->Add( m_buttonCopy, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer69->Add( m_buttonOK, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
+
+	m_buttonRename = new wxButton( this, wxID_BUTTONRENAME, _("&Edit..."), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer69->Add( m_buttonRename, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonNew = new wxButton( this, wxID_BUTTONNEW, _("&New Address..."), wxDefaultPosition, wxSize( 130,32 ), 0 );
+	bSizer69->Add( m_buttonNew, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonCopy = new wxButton( this, wxID_BUTTONCOPY, _("&Copy to Clipboard"), wxDefaultPosition, wxSize( 140,32 ), 0 );
+	bSizer69->Add( m_buttonCopy, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer69->Add( m_buttonOK, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( 90,32 ), 0 );
 	m_buttonCancel->Hide();
-	
-	bSizer69->Add( m_buttonCancel, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
+
+	bSizer69->Add( m_buttonCancel, 0, wxALL|wxEXPAND, 6 );
+
 	bSizer68->Add( bSizer69, 0, wxEXPAND, 5 );
 	
 	this->SetSizer( bSizer68 );
@@ -886,28 +933,29 @@ CYourAddressDialogBase::~CYourAddressDialogBase()
 
 CAddressBookDialogBase::CAddressBookDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+	this->SetSizeHints( wxSize( 550,350 ), wxDefaultSize );
+
 	wxBoxSizer* bSizer58;
 	bSizer58 = new wxBoxSizer( wxVERTICAL );
-	
+
 	m_notebook = new wxNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	m_notebook->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
 	m_panelSending = new wxPanel( m_notebook, wxID_PANELSENDING, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer68;
 	bSizer68 = new wxBoxSizer( wxVERTICAL );
-	
-	
-	bSizer68->Add( 0, 0, 0, wxEXPAND, 5 );
-	
+
+
+	bSizer68->Add( 0, 8, 0, wxEXPAND, 5 );
+
 	m_staticText55 = new wxStaticText( m_panelSending, wxID_ANY, _("Bitcoin Address"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText55->Wrap( -1 );
 	m_staticText55->Hide();
-	
-	bSizer68->Add( m_staticText55, 0, wxTOP|wxRIGHT|wxLEFT, 5 );
-	
+
+	bSizer68->Add( m_staticText55, 0, wxTOP|wxRIGHT|wxLEFT, 8 );
+
 	m_listCtrlSending = new wxListCtrl( m_panelSending, wxID_LISTCTRLSENDING, wxDefaultPosition, wxDefaultSize, wxLC_NO_SORT_HEADER|wxLC_REPORT|wxLC_SORT_ASCENDING );
-	bSizer68->Add( m_listCtrlSending, 1, wxALL|wxEXPAND, 5 );
-	
+	bSizer68->Add( m_listCtrlSending, 1, wxALL|wxEXPAND, 8 );
+
 	m_panelSending->SetSizer( bSizer68 );
 	m_panelSending->Layout();
 	bSizer68->Fit( m_panelSending );
@@ -915,51 +963,52 @@ CAddressBookDialogBase::CAddressBookDialogBase( wxWindow* parent, wxWindowID id,
 	m_panelReceiving = new wxPanel( m_notebook, wxID_PANELRECEIVING, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer681;
 	bSizer681 = new wxBoxSizer( wxVERTICAL );
-	
-	
-	bSizer681->Add( 0, 0, 0, wxEXPAND, 5 );
-	
+
+
+	bSizer681->Add( 0, 8, 0, wxEXPAND, 5 );
+
 	m_staticText45 = new wxStaticText( m_panelReceiving, wxID_ANY, _("These are your Bitcoin addresses for receiving payments.  You can give a different one to each sender to keep track of who is paying you.  The highlighted address will be displayed in the main window."), wxDefaultPosition, wxDefaultSize, 0 );
-	m_staticText45->Wrap( 570 );
-	bSizer681->Add( m_staticText45, 0, wxTOP|wxRIGHT|wxLEFT, 6 );
-	
-	
-	bSizer681->Add( 0, 2, 0, wxEXPAND, 5 );
-	
+	m_staticText45->Wrap( 620 );
+	m_staticText45->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer681->Add( m_staticText45, 0, wxTOP|wxRIGHT|wxLEFT, 10 );
+
+
+	bSizer681->Add( 0, 6, 0, wxEXPAND, 5 );
+
 	m_listCtrlReceiving = new wxListCtrl( m_panelReceiving, wxID_LISTCTRLRECEIVING, wxDefaultPosition, wxDefaultSize, wxLC_NO_SORT_HEADER|wxLC_REPORT|wxLC_SORT_ASCENDING );
-	bSizer681->Add( m_listCtrlReceiving, 1, wxALL|wxEXPAND, 5 );
-	
+	bSizer681->Add( m_listCtrlReceiving, 1, wxALL|wxEXPAND, 8 );
+
 	m_panelReceiving->SetSizer( bSizer681 );
 	m_panelReceiving->Layout();
 	bSizer681->Fit( m_panelReceiving );
 	m_notebook->AddPage( m_panelReceiving, _("Receiving"), true );
-	
-	bSizer58->Add( m_notebook, 1, wxEXPAND|wxTOP|wxRIGHT|wxLEFT, 5 );
-	
+
+	bSizer58->Add( m_notebook, 1, wxEXPAND|wxTOP|wxRIGHT|wxLEFT, 10 );
+
 	wxBoxSizer* bSizer69;
 	bSizer69 = new wxBoxSizer( wxHORIZONTAL );
-	
-	
+
+
 	bSizer69->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_buttonDelete = new wxButton( this, wxID_BUTTONDELETE, _("&Delete"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer69->Add( m_buttonDelete, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonCopy = new wxButton( this, wxID_BUTTONCOPY, _(" &Copy to Clipboard "), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer69->Add( m_buttonCopy, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonEdit = new wxButton( this, wxID_BUTTONEDIT, _("&Edit..."), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer69->Add( m_buttonEdit, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonNew = new wxButton( this, wxID_BUTTONNEW, _(" &New Address... "), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer69->Add( m_buttonNew, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer69->Add( m_buttonOK, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer69->Add( m_buttonCancel, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
+
+	m_buttonDelete = new wxButton( this, wxID_BUTTONDELETE, _("&Delete"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer69->Add( m_buttonDelete, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonCopy = new wxButton( this, wxID_BUTTONCOPY, _("&Copy to Clipboard"), wxDefaultPosition, wxSize( 140,32 ), 0 );
+	bSizer69->Add( m_buttonCopy, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonEdit = new wxButton( this, wxID_BUTTONEDIT, _("&Edit..."), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer69->Add( m_buttonEdit, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonNew = new wxButton( this, wxID_BUTTONNEW, _("&New Address..."), wxDefaultPosition, wxSize( 130,32 ), 0 );
+	bSizer69->Add( m_buttonNew, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer69->Add( m_buttonOK, 0, wxALL|wxEXPAND, 6 );
+
+	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer69->Add( m_buttonCancel, 0, wxALL|wxEXPAND, 6 );
+
 	bSizer58->Add( bSizer69, 0, wxEXPAND, 5 );
 	
 	this->SetSizer( bSizer58 );
@@ -1003,52 +1052,56 @@ CAddressBookDialogBase::~CAddressBookDialogBase()
 
 CGetTextFromUserDialogBase::CGetTextFromUserDialogBase( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
+	this->SetSizeHints( wxSize( 400,130 ), wxDefaultSize );
+
 	wxBoxSizer* bSizer79;
 	bSizer79 = new wxBoxSizer( wxVERTICAL );
-	
+
 	wxBoxSizer* bSizer81;
 	bSizer81 = new wxBoxSizer( wxVERTICAL );
-	
-	
+
+
 	bSizer81->Add( 0, 0, 1, wxEXPAND, 5 );
-	
+
 	m_staticTextMessage1 = new wxStaticText( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextMessage1->Wrap( -1 );
-	bSizer81->Add( m_staticTextMessage1, 0, wxTOP|wxRIGHT|wxLEFT, 5 );
-	
-	m_textCtrl1 = new wxTextCtrl( this, wxID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER );
-	bSizer81->Add( m_textCtrl1, 0, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 5 );
-	
+	m_staticTextMessage1->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer81->Add( m_staticTextMessage1, 0, wxTOP|wxRIGHT|wxLEFT, 8 );
+
+	m_textCtrl1 = new wxTextCtrl( this, wxID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxSize(-1, 28), wxTE_PROCESS_ENTER );
+	m_textCtrl1->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
+	bSizer81->Add( m_textCtrl1, 0, wxALL|wxEXPAND, 8 );
+
 	m_staticTextMessage2 = new wxStaticText( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticTextMessage2->Wrap( -1 );
+	m_staticTextMessage2->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
 	m_staticTextMessage2->Hide();
-	
-	bSizer81->Add( m_staticTextMessage2, 0, wxTOP|wxRIGHT|wxLEFT, 5 );
-	
-	m_textCtrl2 = new wxTextCtrl( this, wxID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER );
+
+	bSizer81->Add( m_staticTextMessage2, 0, wxTOP|wxRIGHT|wxLEFT, 8 );
+
+	m_textCtrl2 = new wxTextCtrl( this, wxID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxSize(-1, 28), wxTE_PROCESS_ENTER );
+	m_textCtrl2->SetFont( wxFont( 10, 70, 90, 90, false, wxEmptyString ) );
 	m_textCtrl2->Hide();
-	
-	bSizer81->Add( m_textCtrl2, 0, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL, 5 );
-	
-	
+
+	bSizer81->Add( m_textCtrl2, 0, wxALL|wxEXPAND, 8 );
+
+
 	bSizer81->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	bSizer79->Add( bSizer81, 1, wxEXPAND|wxALL, 10 );
-	
+
+	bSizer79->Add( bSizer81, 1, wxEXPAND|wxALL, 12 );
+
 	wxBoxSizer* bSizer80;
 	bSizer80 = new wxBoxSizer( wxHORIZONTAL );
-	
-	
+
+
 	bSizer80->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( -1,-1 ), 0 );
-	bSizer80->Add( m_buttonOK, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer80->Add( m_buttonCancel, 0, wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
+
+	m_buttonOK = new wxButton( this, wxID_OK, _("OK"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer80->Add( m_buttonOK, 0, wxALL|wxEXPAND, 8 );
+
+	m_buttonCancel = new wxButton( this, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxSize( 90,32 ), 0 );
+	bSizer80->Add( m_buttonCancel, 0, wxALL|wxEXPAND, 8 );
+
 	bSizer79->Add( bSizer80, 0, wxEXPAND, 5 );
 	
 	this->SetSizer( bSizer79 );

@@ -37,6 +37,7 @@
 #include <wx/spinctrl.h>
 #include <wx/scrolwin.h>
 #include <wx/statbmp.h>
+#include <wx/gauge.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -125,7 +126,11 @@ class CMainFrameBase : public wxFrame
 		wxListCtrl* m_listCtrlSentReceived;
 		wxListCtrl* m_listCtrlSent;
 		wxListCtrl* m_listCtrlReceived;
-		CMainFrameBase( wxWindow* parent, wxWindowID id = wxID_MAINFRAME, const wxString& title = _("Bitcoin"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 723,484 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
+		wxPanel* m_panelSync;
+		wxGauge* m_gaugeSync;
+		wxStaticText* m_staticTextSyncStatus;
+		wxStaticText* m_staticTextSyncProgress;
+		CMainFrameBase( wxWindow* parent, wxWindowID id = wxID_MAINFRAME, const wxString& title = _("Bitcoin"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 820,560 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
 		~CMainFrameBase();
 	
 };
@@ -146,7 +151,7 @@ class CTxDetailsDialogBase : public wxDialog
 		
 	
 	public:
-		CTxDetailsDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Transaction Details"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 620,450 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+		CTxDetailsDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Transaction Details"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 680,500 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
 		~CTxDetailsDialogBase();
 	
 };
@@ -199,7 +204,7 @@ class COptionsDialogBase : public wxDialog
 		
 	
 	public:
-		COptionsDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 540,360 ), long style = wxDEFAULT_DIALOG_STYLE );
+		COptionsDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Options"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 600,420 ), long style = wxDEFAULT_DIALOG_STYLE );
 		~COptionsDialogBase();
 	
 };
@@ -227,7 +232,7 @@ class CAboutDialogBase : public wxDialog
 	
 	public:
 		wxStaticText* m_staticTextVersion;
-		CAboutDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("About Bitcoin"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 532,315 ), long style = wxDEFAULT_DIALOG_STYLE );
+		CAboutDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("About Bitcoin"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 580,360 ), long style = wxDEFAULT_DIALOG_STYLE );
 		~CAboutDialogBase();
 	
 };
@@ -274,7 +279,7 @@ class CSendDialogBase : public wxDialog
 		
 	
 	public:
-		CSendDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Send Coins"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 675,298 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+		CSendDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Send Coins"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 720,380 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
 		~CSendDialogBase();
 	
 };
@@ -301,7 +306,7 @@ class CSendingDialogBase : public wxDialog
 		
 	
 	public:
-		CSendingDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Sending..."), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 442,151 ), long style = wxDEFAULT_DIALOG_STYLE );
+		CSendingDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Sending..."), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 480,180 ), long style = wxDEFAULT_DIALOG_STYLE );
 		~CSendingDialogBase();
 	
 };
@@ -337,7 +342,7 @@ class CYourAddressDialogBase : public wxDialog
 		
 	
 	public:
-		CYourAddressDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Your Bitcoin Addresses"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 610,390 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+		CYourAddressDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Your Bitcoin Addresses"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 680,450 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
 		~CYourAddressDialogBase();
 	
 };
@@ -383,7 +388,7 @@ class CAddressBookDialogBase : public wxDialog
 	
 	public:
 		wxButton* m_buttonCancel;
-		CAddressBookDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Address Book"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 610,390 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
+		CAddressBookDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Address Book"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 700,480 ), long style = wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER );
 		~CAddressBookDialogBase();
 	
 };
@@ -414,7 +419,7 @@ class CGetTextFromUserDialogBase : public wxDialog
 		
 	
 	public:
-		CGetTextFromUserDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 440,138 ), long style = wxDEFAULT_DIALOG_STYLE );
+		CGetTextFromUserDialogBase( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,170 ), long style = wxDEFAULT_DIALOG_STYLE );
 		~CGetTextFromUserDialogBase();
 	
 };

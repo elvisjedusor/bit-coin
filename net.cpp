@@ -893,18 +893,19 @@ void ThreadOpenConnections2(void* parg)
 
         CRITICAL_BLOCK(cs_mapAddresses)
         {
-            // Add seed nodes if IRC isn't working
             static bool fSeedUsed;
             bool fTOR = (fUseProxy && addrProxy.port == htons(9050));
-            if (mapAddresses.empty() && (GetTime() - nStart > 60 || fTOR))
+            if (mapAddresses.empty() && (GetTime() - nStart > 5 || fTOR))
             {
+                printf("Using seed nodes for network bootstrap (%d seeds)\n", (int)ARRAYLEN(pnSeed));
                 for (int i = 0; i < ARRAYLEN(pnSeed); i++)
                 {
-                    // It'll only connect to one or two seed nodes because once it connects,
-                    // it'll get a pile of addresses with newer timestamps.
                     CAddress addr;
                     addr.ip = pnSeed[i];
+                    addr.port = htons(DEFAULT_PORT);
+                    addr.nServices = NODE_NETWORK;
                     addr.nTime = 0;
+                    printf("  Seed %d: %s\n", i, addr.ToString().c_str());
                     AddAddress(addr);
                 }
                 fSeedUsed = true;

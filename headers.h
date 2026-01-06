@@ -117,7 +117,7 @@ using namespace boost;
 #include "bignum.h"
 #include "base58.h"
 #include "script.h"
-#include "db.h"
+#include "bitcoin_db.h"
 #include "net.h"
 #include "irc.h"
 #include "main.h"

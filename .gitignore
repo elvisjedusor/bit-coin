@@ -38,7 +38,8 @@ debug.log
 
 bitok
 bitokd
-obj/
+obj/gui/
+obj/nogui/
 
 # Compiled binaries
 bin/

@@ -2,7 +2,7 @@
 <table>
   <tr>
     <td><img src="rc/bit.png" width="50" height="50"></td>
-    <td valign="middle"><span style="font-size: 50px; font-weight: bold;">Bitok Manifesto</span></td>
+    <td valign="middle"><h1>Bitok Manifesto</h1></td>
   </tr>
 </table>
 
@@ -117,9 +117,7 @@ That is what freedom looks like in code.
 
 ## Masks Matter
 
-Satoshi used a name that was not his. So did Tom Elvis Jedusor. Cypherpunks understand why. Systems that require real names are systems that can be shut down. Systems that worship founders eventually betray their users.
-
-There are no heroes here. Only software and consequences.
+Who is Tom Elvis Jedusor? No one. Systems that require real names are systems that can be shut down. There are no heroes here. Only software and consequences.
 
 ## This Is Not Nostalgia
 
@@ -128,7 +126,7 @@ This is not about the past. It is about proving that Bitcoin did not need permis
 Bitcoin was not broken.  
 It was reinterpreted.
 
-Bitok exists to show that the original system still runs. And that freedom did not require layers, councils, or approval.
+Bitok exists to show that the original code still live. And that freedom did not require layers, councils, or approval.
 
 ### Run the code [bitok][def]. That is the manifesto.
 

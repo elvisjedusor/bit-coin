@@ -126,7 +126,7 @@ class CMainFrameBase : public wxFrame
 		wxListCtrl* m_listCtrlSentReceived;
 		wxListCtrl* m_listCtrlSent;
 		wxListCtrl* m_listCtrlReceived;
-		CMainFrameBase( wxWindow* parent, wxWindowID id = wxID_MAINFRAME, const wxString& title = _("Running bitok"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 820,560 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
+		CMainFrameBase( wxWindow* parent, wxWindowID id = wxID_MAINFRAME, const wxString& title = _("Bitok"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 820,560 ), long style = wxDEFAULT_FRAME_STYLE|wxRESIZE_BORDER|wxTAB_TRAVERSAL );
 		~CMainFrameBase();
 	
 };

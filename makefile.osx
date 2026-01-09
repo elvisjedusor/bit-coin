@@ -13,8 +13,16 @@ ARCH ?= arm64 x86_64
 ARCH_FLAGS = $(foreach arch,$(ARCH),-arch $(arch))
 
 # Compiler flags
+# For native builds: make ARCH="arm64" or make ARCH="x86_64" enables -march=native
+# For universal binaries: make ARCH="arm64 x86_64" (default, no -march)
 CXXFLAGS = -std=c++11 -O2 -Wno-invalid-offsetof -Wformat -Wno-deprecated-declarations
 CXXFLAGS += -mmacosx-version-min=11.0 $(ARCH_FLAGS)
+
+# Enable native CPU optimizations for single-arch builds
+ifeq ($(words $(ARCH)),1)
+    CXXFLAGS += -march=native
+    NATIVE_OPTS = -march=native
+endif
 
 # wxWidgets configuration (for GUI builds)
 WXCONFIG ?= $(HOMEBREW_PREFIX)/bin/wx-config
@@ -61,12 +69,18 @@ CRYPTO_DEFS = -DENABLE_SSE41 -DENABLE_X86_SHANI
 
 # Headers
 HEADERS = headers.h strlcpy.h serialize.h uint256.h util.h key.h bignum.h base58.h \
-    script.h bitcoin_db.h db_cxx_compat.h net.h irc.h main.h rpc.h uibase.h ui.h init.h sha.h
+    script.h bitcoin_db.h db_cxx_compat.h net.h irc.h main.h rpc.h uibase.h ui.h init.h sha.h \
+    yespower.h yespower_hash.h sysendian.h
 
 # Crypto object files (optimized SHA256)
 OBJS_CRYPTO = \
     obj/crypto/sha256.o \
     obj/crypto/sha256_shani.o
+
+# Yespower object files (ASIC-resistant PoW)
+OBJS_YESPOWER = \
+    obj/yespower/yespower-opt.o \
+    obj/yespower/sha256-yp.o
 
 # Object files for GUI
 OBJS_GUI = \
@@ -81,7 +95,8 @@ OBJS_GUI = \
     obj/gui/ui.o \
     obj/gui/uibase.o \
     obj/sha.o \
-    $(OBJS_CRYPTO)
+    $(OBJS_CRYPTO) \
+    $(OBJS_YESPOWER)
 
 # Object files for daemon
 OBJS_DAEMON = \
@@ -94,7 +109,8 @@ OBJS_DAEMON = \
     obj/nogui/rpc.o \
     obj/nogui/init.o \
     obj/sha.o \
-    $(OBJS_CRYPTO)
+    $(OBJS_CRYPTO) \
+    $(OBJS_YESPOWER)
 
 # Targets
 all: bitokd bitok
@@ -119,6 +135,7 @@ directories:
 	@mkdir -p obj/gui
 	@mkdir -p obj/nogui
 	@mkdir -p obj/crypto
+	@mkdir -p obj/yespower
 
 # GUI object files
 obj/gui/%.o: %.cpp $(HEADERS)
@@ -140,6 +157,19 @@ obj/crypto/sha256.o: crypto/sha256.cpp crypto/sha256.h crypto/cpuid.h
 # Optimized crypto - SHA-NI hardware acceleration (x86_64 Intel only)
 obj/crypto/sha256_shani.o: crypto/sha256_shani.cpp crypto/sha256.h
 	$(CXX) -c $(CXXFLAGS) -O3 $(DEFS) $(CRYPTO_DEFS) $(SHANI_FLAGS_X86) $(INCLUDEPATHS) -arch x86_64 -o $@ $<
+
+# Yespower - ASIC-resistant proof-of-work algorithm
+# AUTO-OPTIMIZED for single-arch builds: Uses -march=native to detect YOUR CPU
+# For universal binaries: Uses baseline optimizations for compatibility
+# Override with: make YESPOWER_ARCH=x86-64-v3 (for distribution binaries)
+YESPOWER_ARCH ?= $(if $(NATIVE_OPTS),native,)
+YESPOWER_FLAGS = -O3 -funroll-loops $(if $(YESPOWER_ARCH),-march=$(YESPOWER_ARCH))
+
+obj/yespower/yespower-opt.o: yespower-opt.c yespower.h yespower-platform.c sha256.h sysendian.h insecure_memzero.h
+	$(CC) -c $(YESPOWER_FLAGS) $(DEFS) $(INCLUDEPATHS) $(ARCH_FLAGS) -o $@ $<
+
+obj/yespower/sha256-yp.o: sha256.c sha256.h
+	$(CC) -c $(YESPOWER_FLAGS) $(DEFS) $(INCLUDEPATHS) $(ARCH_FLAGS) -o $@ $<
 
 # Clean
 clean:

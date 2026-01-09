@@ -24,7 +24,7 @@ map<COutPoint, CInPoint> mapNextTx;
 map<uint256, CBlockIndex*> mapBlockIndex;
 
 // uint256 hashGenesisBlock("0x0000000000000000000000000000000000000000000000000000000000000000");
-uint256 hashGenesisBlock("0x000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
+uint256 hashGenesisBlock("0x0290400ea28d3fe79d102ca6b7cd11cee5eba9f17f2046c303d92f65d6ed2617");
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
 uint256 hashBestChain = 0;
@@ -1306,7 +1306,7 @@ bool CBlock::CheckBlock() const
     // Check proof of work matches claimed amount
     if (CBigNum().SetCompact(nBits) > bnProofOfWorkLimit)
         return error("CheckBlock() : nBits below minimum work");
-    if (GetHash() > CBigNum().SetCompact(nBits).getuint256())
+    if (GetPoWHash() > CBigNum().SetCompact(nBits).getuint256())
         return error("CheckBlock() : hash doesn't match nBits");
 
     // Check merkleroot
@@ -1581,8 +1581,8 @@ bool LoadBlockIndex(bool fAllowNew)
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
         block.nTime    = 1231006505;
-        block.nBits    = 0x1d00ffff;
-        block.nNonce   = 0;
+        block.nBits    = 0x1effffff; // Match bnProofOfWorkLimit (~uint256(0) >> 17)
+        block.nNonce   = 37137;
 
         // Mine the genesis block with multi-threading
         if (hashGenesisBlock == 0)
@@ -1608,6 +1608,7 @@ bool LoadBlockIndex(bool fAllowNew)
                 printf(" (-genproclimit=%d)\n", nLimitProcessors);
             else
                 printf(" (all CPUs)\n");
+            fflush(stdout);
 
             // Setup shared genesis data
             GenesisData genesis;
@@ -2591,6 +2592,7 @@ void InitSHA256()
     if (!g_sha256_initialized) {
         std::string impl = SHA256AutoDetect();
         printf("SHA256 implementation: %s\n", impl.c_str());
+        fflush(stdout);
         g_sha256_initialized = true;
     }
 }
@@ -2671,13 +2673,13 @@ void ThreadGenesisMiner(void* parg)
     if (fLimitProcessors && nThreads > nLimitProcessors)
         nThreads = nLimitProcessors;
 
-    printf("Genesis thread %d started\n", nThreadID);
+    printf("Genesis thread %d started (Yespower)\n", nThreadID);
 
     while (!genesis.fFound)
     {
-        // Use optimized BlockSHA256
-        BlockSHA256(&tmp.block_header, nBlocks0, &tmp.hash1);
-        BlockSHA256(&tmp.hash1, nBlocks1, &hash);
+        genesis.block.nNonce = tmp.block_header.nNonce;
+        genesis.block.nTime = tmp.block_header.nTime;
+        hash = genesis.block.GetPoWHash();
 
         nHashCount++;
 
@@ -2690,32 +2692,30 @@ void ThreadGenesisMiner(void* parg)
                     genesis.fFound = true;
                     genesis.nSolution = tmp.block_header.nNonce;
                     genesis.nTimeSolution = tmp.block_header.nTime;
-                    printf("\nGenesis solution found by thread %d!\n", nThreadID);
+                    printf("\nGenesis solution found by thread %d (Yespower)!\n", nThreadID);
                     printf("nNonce = %u\n", genesis.nSolution);
-                    printf("Hash = %s\n", hash.ToString().c_str());
+                    printf("PoW Hash = %s\n", hash.ToString().c_str());
                 }
             }
             break;
         }
 
-        // Increment nonce by number of threads (each thread has its own range)
         tmp.block_header.nNonce += nThreads;
 
-        if (tmp.block_header.nNonce < nThreads)  // Wrapped around
+        if (tmp.block_header.nNonce < nThreads)
         {
             tmp.block_header.nTime++;
             printf("Thread %d: Nonce wrapped, incrementing time to %u\n", nThreadID, tmp.block_header.nTime);
         }
 
-        // Progress report every 1M hashes
-        if ((nHashCount & 0xFFFFF) == 0)
+        if ((nHashCount & 0xFF) == 0)
         {
             int64 nElapsed = GetTimeMillis() - nStartTime;
             if (nElapsed > 0)
             {
                 double dHashRate = (1000.0 * nHashCount) / nElapsed;
-                printf("Thread %d: %.0f khash/s, nNonce %08X, hash %s\n",
-                       nThreadID, dHashRate / 1000.0, tmp.block_header.nNonce,
+                printf("Thread %d: %.1f h/s, nNonce %08X, hash %s\n",
+                       nThreadID, dHashRate, tmp.block_header.nNonce,
                        hash.ToString().substr(0, 16).c_str());
             }
         }
@@ -2725,7 +2725,7 @@ void ThreadGenesisMiner(void* parg)
     if (nElapsed > 0)
     {
         double dHashRate = (1000.0 * nHashCount) / nElapsed;
-        printf("Thread %d finished: %.0f khash/s total\n", nThreadID, dHashRate / 1000.0);
+        printf("Thread %d finished: %.1f h/s total (Yespower)\n", nThreadID, dHashRate);
     }
 
     CRITICAL_BLOCK(genesis.cs)
@@ -2741,10 +2741,12 @@ void BitcoinMiner()
     {
         printf("\n");
         printf("========================================\n");
-        printf("   BITCOIN MINER STARTED\n");
+        printf("   YESPOWER MINER STARTED\n");
+        printf("   (CPU-friendly, ASIC-resistant)\n");
         printf("========================================\n");
-        printf("Threads: %d\n", fLimitProcessors ? nLimitProcessors : vnThreadsRunning[3]);
-        printf("Height:  %d\n", nBestHeight);
+        printf("Algorithm: Yespower 1.0 (N=2048, r=32)\n");
+        printf("Threads:   %d\n", fLimitProcessors ? nLimitProcessors : vnThreadsRunning[3]);
+        printf("Height:    %d\n", nBestHeight);
         printf("========================================\n");
         printf("\n");
     }
@@ -2870,27 +2872,25 @@ void BitcoinMiner()
 
 
         //
-        // Search
+        // Search using Yespower (CPU-friendly, ASIC-resistant)
         //
         int64 nStart = GetTime();
         uint256 hashTarget = CBigNum().SetCompact(pblock->nBits).getuint256();
         uint256 hash;
         loop
         {
-            BlockSHA256(&tmp.block, nBlocks0, &tmp.hash1);
-            BlockSHA256(&tmp.hash1, nBlocks1, &hash);
+            pblock->nNonce = tmp.block.nNonce;
+            hash = pblock->GetPoWHash();
 
             if (hash <= hashTarget)
             {
-                pblock->nNonce = tmp.block.nNonce;
-                assert(hash == pblock->GetHash());
-
                     printf("\n");
                     printf("========================================\n");
-                    printf(">>> BLOCK MINED! <<<\n");
+                    printf(">>> BLOCK MINED (Yespower)! <<<\n");
                     printf("========================================\n");
                     printf("Height:  %d\n", nBestHeight + 1);
-                    printf("Hash:    %s\n", hash.GetHex().c_str());
+                    printf("PoW:     %s\n", hash.GetHex().c_str());
+                    printf("Block:   %s\n", pblock->GetHash().GetHex().c_str());
                     printf("Target:  %s\n", hashTarget.GetHex().c_str());
                     printf("Reward:  %s\n", FormatMoney(pblock->vtx[0].vout[0].nValue).c_str());
                     printf("Txs:     %d\n", pblock->vtx.size());
@@ -2903,16 +2903,13 @@ void BitcoinMiner()
                 {
                     if (pindexPrev == pindexBest)
                     {
-                        // Save key
                         if (!AddKey(key))
                             return;
                         key.MakeNewKey();
 
-                        // Track how many getdata requests this block gets
                         CRITICAL_BLOCK(cs_mapRequestCount)
                             mapRequestCount[pblock->GetHash()] = 0;
 
-                        // Process this block the same as if we had received it from another node
                         if (!ProcessBlock(NULL, pblock.release()))
                             printf("ERROR in BitcoinMiner, ProcessBlock, block not accepted\n");
                     }
@@ -2923,11 +2920,9 @@ void BitcoinMiner()
                 break;
             }
 
-            // Update nTime every few seconds
-            const unsigned int nMask = 0xffff;
+            const unsigned int nMask = 0xff;
             if ((++tmp.block.nNonce & nMask) == 0)
             {
-                // Meter hashes/sec
                 static int64 nHashCounter;
                 static int64 nLastTick;
                 if (nLastTick == 0)
@@ -2939,14 +2934,35 @@ void BitcoinMiner()
                     double dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nLastTick);
                     nLastTick = GetTimeMillis();
                     nHashCounter = 0;
-                    string strStatus = strprintf(" %.0f khash/s", dHashesPerSec/1000.0);
-                    UIThreadCall(bind(CalledSetStatusBar, strStatus, 0));
+
+                    // Format hashrate with appropriate unit
+                    string strHashRate;
+                    if (dHashesPerSec >= 1000000000.0)
+                        strHashRate = strprintf(" %.2f GH/s", dHashesPerSec / 1000000000.0);
+                    else if (dHashesPerSec >= 1000000.0)
+                        strHashRate = strprintf(" %.2f MH/s", dHashesPerSec / 1000000.0);
+                    else if (dHashesPerSec >= 1000.0)
+                        strHashRate = strprintf(" %.2f KH/s", dHashesPerSec / 1000.0);
+                    else
+                        strHashRate = strprintf(" %.1f H/s", dHashesPerSec);
+
+                    UIThreadCall(bind(CalledSetStatusBar, strHashRate, 0));
                     static int64 nLogTime;
                     if (GetTime() - nLogTime > 30)
                     {
                         nLogTime = GetTime();
-                        printf("[MINING] Hashrate: %.0f khash/s | Threads: %d | Height: %d | Txs: %d\n",
-                               dHashesPerSec/1000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                        if (dHashesPerSec >= 1000000000.0)
+                            printf("Hashrate: %.2f GH/s | Threads: %d | Height: %d | Txs: %d\n",
+                                   dHashesPerSec / 1000000000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                        else if (dHashesPerSec >= 1000000.0)
+                            printf("Hashrate: %.2f MH/s | Threads: %d | Height: %d | Txs: %d\n",
+                                   dHashesPerSec / 1000000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                        else if (dHashesPerSec >= 1000.0)
+                            printf("Hashrate: %.2f KH/s | Threads: %d | Height: %d | Txs: %d\n",
+                                   dHashesPerSec / 1000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                        else
+                            printf("Hashrate: %.1f H/s | Threads: %d | Height: %d | Txs: %d\n",
+                                   dHashesPerSec, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
                     }
                 }
 

@@ -1,5 +1,14 @@
 # Bitok - Windows Build Instructions
 
+**Bitcoin v0.3.0 with GPU-resistant mining - Modern Windows build**
+
+This is Satoshi's original code from 2010, adapted to run on modern Windows with CPU-friendly proof-of-work.
+
+For mining details, see [BITOKPOW.md](BITOKPOW.md).
+For philosophy, see [MANIFESTO.md](MANIFESTO.md).
+
+---
+
 Modern build instructions for Windows 10+ (64-bit)
 
 ## Two Build Methods
@@ -74,6 +83,18 @@ pacman -S --needed \
 make -f makefile.mingw bitokd.exe  # Daemon only
 make -f makefile.mingw bitok.exe   # GUI wallet
 make -f makefile.mingw all         # Both
+```
+
+---
+
+## CPU Optimization
+
+The makefile automatically uses `-march=native` to compile with all CPU features available on your system (AVX2, SSE4.1, etc.). This provides maximum performance.
+
+**For distribution binaries:**
+```bash
+make -f makefile.mingw all MARCH=x86-64-v3  # For modern CPUs (2015+)
+make -f makefile.mingw all MARCH=x86-64     # Maximum compatibility
 ```
 
 ---

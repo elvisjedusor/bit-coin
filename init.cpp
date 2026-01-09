@@ -4,6 +4,7 @@
 
 #include "headers.h"
 #include "crypto/sha256.h"
+#include "yespower_dispatch.h"
 
 extern void InitSHA256();
 
@@ -307,6 +308,7 @@ bool CMyApp::OnInit2()
 #endif
 
     InitSHA256();
+    yespower_init_dispatch();
 
 #ifdef __WXMSW__
 #if wxUSE_UNICODE
@@ -700,6 +702,7 @@ bool AppInit(int argc, char* argv[])
 #endif
 
     InitSHA256();
+    yespower_init_dispatch();
 
     // Check if any argument is an RPC command (not starting with -)
     // RPC commands can appear after options like -datadir

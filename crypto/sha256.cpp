@@ -236,6 +236,7 @@ std::string SHA256AutoDetect(sha256_implementation::UseImplementation use_implem
         sha256d64_transform = sha256_x86_shani::TransformD64;  // Also set the D64 version!
         g_sha256_impl_name = "shani(1way)";
         printf("SHA256: Using SHA-NI hardware acceleration\n");
+        fflush(stdout);
         return g_sha256_impl_name;
     }
 #endif
@@ -244,17 +245,20 @@ std::string SHA256AutoDetect(sha256_implementation::UseImplementation use_implem
     if (g_have_sse4 && (use_implementation & sha256_implementation::USE_SSE4)) {
         g_sha256_impl_name = "sse4(1way)";
         printf("SHA256: Using SSE4.1 acceleration\n");
+        fflush(stdout);
         return g_sha256_impl_name;
     }
 #endif
 
     if (g_have_avx2) {
         printf("SHA256: AVX2 detected but using standard implementation\n");
+        fflush(stdout);
     }
 #endif
 
     g_sha256_impl_name = "standard";
     printf("SHA256: Using standard C implementation\n");
+    fflush(stdout);
     return g_sha256_impl_name;
 }
 

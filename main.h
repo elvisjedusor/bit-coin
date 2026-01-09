@@ -2,6 +2,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
+#include "yespower_hash.h"
+
 class COutPoint;
 class CInPoint;
 class CDiskTxPos;
@@ -19,7 +21,7 @@ static const int64 COIN = 100000000;
 static const int64 CENT = 1000000;
 static const int COINBASE_MATURITY = 100;
 
-static const CBigNum bnProofOfWorkLimit(~uint256(0) >> 32);
+static const CBigNum bnProofOfWorkLimit(~uint256(0) >> 17);
 
 
 
@@ -912,6 +914,11 @@ public:
     uint256 GetHash() const
     {
         return Hash(BEGIN(nVersion), END(nNonce));
+    }
+
+    uint256 GetPoWHash() const
+    {
+        return YespowerHash(BEGIN(nVersion), END(nNonce));
     }
 
 

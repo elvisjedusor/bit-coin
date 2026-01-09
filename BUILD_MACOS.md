@@ -1,5 +1,14 @@
 # Bitok - macOS Build Instructions
 
+**Bitcoin v0.3.0 with GPU-resistant mining - Modern macOS build**
+
+This is Satoshi's original code from 2010, adapted to run on modern macOS with CPU-friendly proof-of-work.
+
+For mining details, see [BITOKPOW.md](BITOKPOW.md).
+For philosophy, see [MANIFESTO.md](MANIFESTO.md).
+
+---
+
 Modern build instructions for macOS 11.0+ (Big Sur and later)
 Supports both Apple Silicon (arm64) and Intel (x86_64)
 
@@ -43,6 +52,21 @@ make -f makefile.osx bitok
 
 ```bash
 make -f makefile.osx all
+```
+
+## CPU Optimization
+
+Default builds create universal binaries (ARM + Intel). For native builds optimized for your CPU:
+
+```bash
+make -f makefile.osx ARCH="$(uname -m)" all  # Native build with -march=native
+```
+
+**For distribution binaries:**
+```bash
+make -f makefile.osx all                           # Universal binary (default)
+make -f makefile.osx ARCH=x86_64 YESPOWER_ARCH=x86-64-v3 all  # Intel optimized
+make -f makefile.osx ARCH=arm64 all                # Apple Silicon only
 ```
 
 ## Installation

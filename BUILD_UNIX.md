@@ -10,6 +10,20 @@ This product includes software developed by the OpenSSL Project for use in the O
 
 ---
 
+## What Is Bitok?
+
+Bitok is Bitcoin v0.3.0 (Satoshi's last personal release) adapted to run on modern systems with **GPU-resistant proof-of-work**.
+
+**Key changes from Bitcoin v0.3.0:**
+- ✅ Modern system compatibility (Ubuntu 24.04, OpenSSL 3.x, etc.)
+- ✅ Yespower mining algorithm (CPU-friendly, GPU/ASIC-resistant)
+- ✅ New genesis block (separate network)
+
+For mining details, see [BITOKPOW.md](BITOKPOW.md).
+For philosophy, see [MANIFESTO.md](MANIFESTO.md).
+
+---
+
 ## Overview
 
 This codebase has been modernized to compile on **Ubuntu 24.04 LTS** with modern toolchain:
@@ -19,6 +33,7 @@ This codebase has been modernized to compile on **Ubuntu 24.04 LTS** with modern
 - **Berkeley DB 5.3** (using C API compatibility layer)
 - **Boost 1.74+**
 - **wxWidgets 3.2** (optional, for GUI)
+- **Yespower** (CPU-optimized proof-of-work with automatic SIMD detection)
 
 ---
 
@@ -76,6 +91,18 @@ To build both daemon and GUI in one command:
 
 ```bash
 make -f makefile.unix all
+```
+
+---
+
+## CPU Optimization
+
+The makefile automatically uses `-march=native` to compile with all CPU features available on your system (AVX2, SSE4.1, etc.). This provides maximum performance.
+
+**For distribution binaries:**
+```bash
+make -f makefile.unix all YESPOWER_ARCH=x86-64-v3  # For modern CPUs (2015+)
+make -f makefile.unix all YESPOWER_ARCH=x86-64     # Maximum compatibility
 ```
 
 ---
@@ -230,6 +257,15 @@ The following changes were made for Ubuntu 24.04 compatibility:
 - Daemon build no longer requires wxWidgets
 - GUI-specific code conditionally compiled with `#if wxUSE_GUI`
 - Clean separation between CLI and GUI builds
+
+### 6. Yespower Proof-of-Work
+- Replaced SHA-256 with Yespower 1.0 (N=2048, r=32, personalization="BitokPoW")
+- Implements Satoshi's vision of CPU-only mining
+- Automatic CPU feature detection (SSE2/AVX/AVX2/AVX512)
+- Memory-hard algorithm (~128KB per hash)
+- GPU/ASIC-resistant by design
+
+See [BITOKPOW.md](BITOKPOW.md) for complete technical details.
 
 ---
 

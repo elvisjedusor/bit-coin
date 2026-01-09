@@ -1,0 +1,62 @@
+/*
+ * Yespower hash integration for Bitcoin
+ * CPU-friendly, GPU/ASIC-resistant proof-of-work
+ */
+
+#ifndef YESPOWER_HASH_H
+#define YESPOWER_HASH_H
+
+#include <stdint.h>
+#include <string.h>
+#include "uint256.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "yespower.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+#define YESPOWER_N 2048
+#define YESPOWER_R 32
+
+static const char* YESPOWER_PERS = "BitokPoW";
+static const size_t YESPOWER_PERSLEN = 8;
+
+static const yespower_params_t yespower_params = {
+    .version = YESPOWER_1_0,
+    .N = YESPOWER_N,
+    .r = YESPOWER_R,
+    .pers = (const uint8_t*)YESPOWER_PERS,
+    .perslen = YESPOWER_PERSLEN
+};
+
+inline void yespower_hash(const char* input, size_t inputlen, char* output)
+{
+    yespower_binary_t dst;
+    if (yespower_tls((const uint8_t*)input, inputlen, &yespower_params, &dst) == 0) {
+        memcpy(output, dst.uc, 32);
+    } else {
+        memset(output, 0xff, 32);
+    }
+}
+
+inline uint256 YespowerHash(const void* pbegin, const void* pend)
+{
+    uint256 result;
+    size_t len = (const char*)pend - (const char*)pbegin;
+    yespower_hash((const char*)pbegin, len, (char*)&result);
+    return result;
+}
+
+inline uint256 YespowerHashBlock(const void* pblock, size_t len)
+{
+    uint256 result;
+    yespower_hash((const char*)pblock, len, (char*)&result);
+    return result;
+}
+
+#endif /* YESPOWER_HASH_H */

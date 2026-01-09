@@ -1001,7 +1001,6 @@ void ThreadDelayedRepaint(void* parg)
             nLastRepaint = nNeedRepaint;
             if (pframeMain)
             {
-                printf("DelayedRepaint\n");
                 pframeMain->fRefresh = true;
                 pframeMain->Refresh();
             }

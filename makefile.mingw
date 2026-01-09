@@ -21,7 +21,10 @@ else
 endif
 
 # Compiler flags for Windows 10+ (64-bit)
-CXXFLAGS = -std=c++11 -O2 -mthreads -w -Wno-invalid-offsetof -Wformat
+# AUTO-OPTIMIZED: -march=native enables all CPU features (AVX2, SSE4.1, etc)
+# For distribution binaries: override with make MARCH=x86-64-v3
+MARCH ?= native
+CXXFLAGS = -std=c++11 -O2 -march=$(MARCH) -mthreads -w -Wno-invalid-offsetof -Wformat
 CXXFLAGS += -D_WIN32_WINNT=0x0A00  # Windows 10
 CXXFLAGS += -DWIN32 -D_WINDOWS -DNOPCH
 CXXFLAGS += -DOPENSSL_SUPPRESS_DEPRECATED
@@ -117,12 +120,18 @@ CRYPTO_DEFS = -DENABLE_SSE41 -DENABLE_X86_SHANI
 
 # Headers
 HEADERS = headers.h strlcpy.h serialize.h uint256.h util.h key.h bignum.h base58.h \
-    script.h bitcoin_db.h db_cxx_compat.h net.h irc.h main.h rpc.h uibase.h ui.h init.h sha.h
+    script.h bitcoin_db.h db_cxx_compat.h net.h irc.h main.h rpc.h uibase.h ui.h init.h sha.h \
+    yespower.h yespower_hash.h sysendian.h
 
 # Crypto object files (optimized SHA256)
 OBJS_CRYPTO = \
     obj/crypto/sha256.o \
     obj/crypto/sha256_shani.o
+
+# Yespower object files (ASIC-resistant PoW)
+OBJS_YESPOWER = \
+    obj/yespower/yespower-opt.o \
+    obj/yespower/sha256-yp.o
 
 # Object files for GUI
 OBJS_GUI = \
@@ -137,7 +146,8 @@ OBJS_GUI = \
     obj/gui/ui.o \
     obj/gui/uibase.o \
     obj/sha.o \
-    $(OBJS_CRYPTO)
+    $(OBJS_CRYPTO) \
+    $(OBJS_YESPOWER)
 
 # Object files for daemon
 OBJS_DAEMON = \
@@ -150,7 +160,8 @@ OBJS_DAEMON = \
     obj/nogui/rpc.o \
     obj/nogui/init.o \
     obj/sha.o \
-    $(OBJS_CRYPTO)
+    $(OBJS_CRYPTO) \
+    $(OBJS_YESPOWER)
 
 # Resource file (Windows icon, etc.)
 ifdef IS_CROSS_COMPILE
@@ -184,6 +195,7 @@ directories:
 	@mkdir -p obj/gui
 	@mkdir -p obj/nogui
 	@mkdir -p obj/crypto
+	@mkdir -p obj/yespower
 
 # GUI object files
 obj/gui/%.o: %.cpp $(HEADERS)
@@ -209,6 +221,24 @@ obj/crypto/sha256_shani.o: crypto/sha256_shani.cpp crypto/sha256.h
 obj/ui_res.o: ui.rc
 	@echo "Compiling Windows resources..."
 	-$(WINDRES) $(DEFS_GUI) $(INCLUDEPATHS) -i $< -o $@
+
+# Yespower - ASIC-resistant proof-of-work algorithm
+ifdef IS_CROSS_COMPILE
+    CC = $(CROSS_PREFIX)gcc
+else
+    CC = gcc
+endif
+# AUTO-OPTIMIZED: Uses -march=native to detect YOUR CPU and enable ALL optimizations
+# For distribution binaries: override with YESPOWER_ARCH=x86-64-v3 (works on most CPUs 2015+)
+# For old CPUs: override with YESPOWER_ARCH=x86-64 (maximum compatibility)
+YESPOWER_ARCH ?= $(MARCH)
+YESPOWER_FLAGS = -O3 -funroll-loops -march=$(YESPOWER_ARCH)
+
+obj/yespower/yespower-opt.o: yespower-opt.c yespower.h yespower-platform.c sha256.h sysendian.h insecure_memzero.h
+	$(CC) -c $(YESPOWER_FLAGS) $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/yespower/sha256-yp.o: sha256.c sha256.h
+	$(CC) -c $(YESPOWER_FLAGS) $(DEFS) $(INCLUDEPATHS) -o $@ $<
 
 # Clean
 clean:

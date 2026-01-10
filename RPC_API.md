@@ -2,7 +2,7 @@
 
 **Complete JSON-RPC API Reference for Exchanges, Mining Pools, Block Explorers, and Wallet Integration**
 
-Version: Bitcoin 0.3.0 / Bitok
+Version: Bitcoin 0.3.19 / Bitok
 
 ---
 

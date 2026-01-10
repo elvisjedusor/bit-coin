@@ -16,10 +16,15 @@ class CBlockIndex;
 class CWalletTx;
 class CKeyItem;
 
+static const unsigned int MAX_BLOCK_SIZE = 1000000;
 static const unsigned int MAX_SIZE = 0x02000000;
+static const unsigned int MAX_INV_SZ = 50000;
 static const int64 COIN = 100000000;
 static const int64 CENT = 1000000;
 static const int COINBASE_MATURITY = 100;
+static const int64 MAX_MONEY = 21000000 * COIN;
+
+inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 
 static const CBigNum bnProofOfWorkLimit(~uint256(0) >> 17);
 
@@ -467,10 +472,18 @@ public:
         if (vin.empty() || vout.empty())
             return error("CTransaction::CheckTransaction() : vin or vout empty");
 
-        // Check for negative values
+        // Check for negative or overflow values
+        int64 nValueOut = 0;
         foreach(const CTxOut& txout, vout)
+        {
             if (txout.nValue < 0)
                 return error("CTransaction::CheckTransaction() : txout.nValue negative");
+            if (txout.nValue > MAX_MONEY)
+                return error("CTransaction::CheckTransaction() : txout.nValue too high");
+            nValueOut += txout.nValue;
+            if (!MoneyRange(nValueOut))
+                return error("CTransaction::CheckTransaction() : txout total out of range");
+        }
 
         if (IsCoinBase())
         {

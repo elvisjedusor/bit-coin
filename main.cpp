@@ -65,8 +65,98 @@ int fMinimizeToTray = true;
 int fMinimizeOnClose = true;
 
 
+//////////////////////////////////////////////////////////////////////////////
+//
+// Blockchain Checkpoints
+//
+
+namespace Checkpoints
+{
+    typedef map<int, uint256> MapCheckpoints;
+
+    static MapCheckpoints mapCheckpoints =
+        boost::assign::map_list_of
+        (0, hashGenesisBlock)
+        ;
+
+    bool CheckBlock(int nHeight, const uint256& hash)
+    {
+        MapCheckpoints::const_iterator i = mapCheckpoints.find(nHeight);
+        if (i == mapCheckpoints.end()) return true;
+        return hash == i->second;
+    }
+
+    int GetTotalBlocksEstimate()
+    {
+        if (mapCheckpoints.empty())
+            return 0;
+        return mapCheckpoints.rbegin()->first;
+    }
+
+    CBlockIndex* GetLastCheckpoint(const map<uint256, CBlockIndex*>& mapBlockIndex)
+    {
+        int64 nResult = 0;
+        BOOST_REVERSE_FOREACH(const MapCheckpoints::value_type& i, mapCheckpoints)
+        {
+            const uint256& hash = i.second;
+            map<uint256, CBlockIndex*>::const_iterator t = mapBlockIndex.find(hash);
+            if (t != mapBlockIndex.end())
+                return t->second;
+        }
+        return NULL;
+    }
+}
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Transaction Standardness Check
+//
+
+bool IsStandard(const CScript& scriptPubKey)
+{
+    // Standard tx with single pubkey:
+    // pubkey OP_CHECKSIG
+    if (scriptPubKey.size() == 35 && scriptPubKey[0] == 33 && scriptPubKey[34] == OP_CHECKSIG)
+        return true;
+
+    // Standard tx with Bitcoin address:
+    // OP_DUP OP_HASH160 <hash160> OP_EQUALVERIFY OP_CHECKSIG
+    if (scriptPubKey.size() == 25 &&
+        scriptPubKey[0] == OP_DUP &&
+        scriptPubKey[1] == OP_HASH160 &&
+        scriptPubKey[2] == 20 &&
+        scriptPubKey[23] == OP_EQUALVERIFY &&
+        scriptPubKey[24] == OP_CHECKSIG)
+        return true;
+
+    return false;
+}
+
+bool IsStandardTx(const CTransaction& tx)
+{
+    if (tx.nVersion > 1)
+        return false;
+
+    foreach(const CTxIn& txin, tx.vin)
+    {
+        // Biggest 'standard' txin is a 3-signature 3-of-3 CHECKMULTISIG
+        // pay-to-script-hash, which is 3 ~80-byte signatures, 3
+        // ~65-byte public keys, plus a few script ops.
+        if (txin.scriptSig.size() > 500)
+            return false;
+        if (!txin.scriptSig.IsPushOnly())
+            return false;
+    }
+
+    foreach(const CTxOut& txout, tx.vout)
+        if (!IsStandard(txout.scriptPubKey))
+            return false;
+
+    return true;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -496,6 +586,10 @@ bool CTransaction::AcceptTransaction(CTxDB& txdb, bool fCheckInputs, bool* pfMis
 
     if (!CheckTransaction())
         return error("AcceptTransaction() : CheckTransaction failed");
+
+    // Check for standard transaction types
+    if (!IsStandardTx(*this))
+        return error("AcceptTransaction() : nonstandard transaction type");
 
     // To help v0.1.5 clients who would see it as a negative number
     if (nLockTime > INT_MAX)
@@ -1110,6 +1204,16 @@ bool Reorganize(CTxDB& txdb, CBlockIndex* pindexNew)
                 return error("Reorganize() : plonger->pprev is null");
     }
 
+    // Reorganize is costly in terms of db load, as it works in a single db transaction.
+    // Try to limit how much needs to be done inside
+    CBlockIndex* pindexLastCommon = pfork;
+    if (pindexLastCommon)
+    {
+        CBlockIndex* pindex = Checkpoints::GetLastCheckpoint(mapBlockIndex);
+        if (pindex && pindexLastCommon->nHeight < pindex->nHeight)
+            return error("Reorganize() : reorganize past last checkpoint %d", pindex->nHeight);
+    }
+
     // List of what to disconnect
     vector<CBlockIndex*> vDisconnect;
     for (CBlockIndex* pindex = pindexBest; pindex != pfork; pindex = pindex->pprev)
@@ -1212,6 +1316,10 @@ bool CBlock::AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos)
         pindexNew->nHeight = pindexNew->pprev->nHeight + 1;
     }
 
+    // Check against checkpoints
+    if (!Checkpoints::CheckBlock(pindexNew->nHeight, hash))
+        return error("AddToBlockIndex() : rejected by checkpoint lockin at %d", pindexNew->nHeight);
+
     CTxDB txdb;
     txdb.TxnBegin();
     txdb.WriteBlockIndex(CDiskBlockIndex(pindexNew));
@@ -1284,7 +1392,7 @@ bool CBlock::CheckBlock() const
     // that can be verified before saving an orphan block.
 
     // Size limits
-    if (vtx.empty() || vtx.size() > MAX_SIZE || ::GetSerializeSize(*this, SER_DISK) > MAX_SIZE)
+    if (vtx.empty() || vtx.size() > MAX_BLOCK_SIZE || ::GetSerializeSize(*this, SER_NETWORK) > MAX_BLOCK_SIZE)
         return error("CheckBlock() : size limits failed");
 
     // Check timestamp
@@ -1838,7 +1946,7 @@ bool ProcessMessages(CNode* pfrom)
         {
             // Rewind and wait for rest of message
             ///// need a mechanism to give up waiting for overlong message size error
-            vRecv.insert(vRecv.begin(), vHeaderSave.begin(), vHeaderSave.end());
+            vRecv.insert(vRecv.begin(), &vHeaderSave[0], &vHeaderSave[0] + vHeaderSave.size());
             break;
         }
 

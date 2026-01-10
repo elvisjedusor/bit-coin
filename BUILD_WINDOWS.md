@@ -1,6 +1,6 @@
 # Bitok - Windows Build Instructions
 
-**Bitcoin v0.3.0 with GPU-resistant mining - Modern Windows build**
+**Bitcoin v0.3.19 with GPU-resistant mining - Modern Windows build**
 
 This is Satoshi's original code from 2010, adapted to run on modern Windows with CPU-friendly proof-of-work.
 

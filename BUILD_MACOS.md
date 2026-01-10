@@ -1,6 +1,6 @@
 # Bitok - macOS Build Instructions
 
-**Bitcoin v0.3.0 with GPU-resistant mining - Modern macOS build**
+**Bitcoin v0.3.19 with GPU-resistant mining - Modern macOS build**
 
 This is Satoshi's original code from 2010, adapted to run on modern macOS with CPU-friendly proof-of-work.
 

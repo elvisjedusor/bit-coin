@@ -596,6 +596,21 @@ public:
     }
 
 
+    bool IsPushOnly() const
+    {
+        const_iterator pc = begin();
+        while (pc < end())
+        {
+            opcodetype opcode;
+            vector<unsigned char> vchPushValue;
+            if (!GetOp(pc, opcode, vchPushValue))
+                return false;
+            if (opcode > OP_16)
+                return false;
+        }
+        return true;
+    }
+
     void PrintHex() const
     {
         printf("CScript(%s)\n", HexStr(begin(), end()).c_str());

@@ -12,12 +12,15 @@ This product includes software developed by the OpenSSL Project for use in the O
 
 ## What Is Bitok?
 
-Bitok is Bitcoin v0.3.0 (Satoshi's last personal release) adapted to run on modern systems with **GPU-resistant proof-of-work**.
+Bitok is Bitcoin v0.3.19 (Satoshi's final release, December 2010) adapted to run on modern systems with **GPU-resistant proof-of-work**.
 
-**Key changes from Bitcoin v0.3.0:**
+Bitcoin v0.3.19 includes all critical security fixes from the Satoshi era (value overflow protection, checkpoints, DoS limits, IsStandard filter).
+
+**Key changes from original Bitcoin:**
 - ✅ Modern system compatibility (Ubuntu 24.04, OpenSSL 3.x, etc.)
 - ✅ Yespower mining algorithm (CPU-friendly, GPU/ASIC-resistant)
 - ✅ New genesis block (separate network)
+- ✅ All Satoshi-era security fixes included from launch
 
 For mining details, see [BITOKPOW.md](BITOKPOW.md).
 For philosophy, see [MANIFESTO.md](MANIFESTO.md).

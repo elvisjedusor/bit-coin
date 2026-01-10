@@ -1,13 +1,13 @@
-# Bitok 0.3.0 (Mainnet)
+# Bitok 0.3.19 (Mainnet)
 
-Bitok 0.3.0 is a restored release of Bitcoin v0.3.0 (2010), the last version of Bitcoin personally released and configured by Satoshi Nakamoto. The software preserves the original behavior and operating model of early Bitcoin, while adapting mining to keep GPU and ASIC hardware inefficient.
+Bitok 0.3.19 is a restored release of Bitcoin v0.3.19 (2010), the last version released under Satoshi Nakamoto's direct involvement. The software preserves the original behavior and operating model of early Bitcoin, while adapting mining to keep GPU and ASIC hardware inefficient.
 
 BITOK is not BTC.
 It does not connect to, interact with, or fork the Bitcoin mainnet.
 
 ## Overview
 
-Bitok preserves the original Bitcoin v0.3.0 codebase with the following intentional modifications:
+Bitok implements the complete Satoshi-era codebase (v0.3.19) with these intentional modifications:
 
 - Modern build compatibility on contemporary toolchains
 
@@ -49,7 +49,7 @@ Peer discovery uses IRC bootstrap, exactly as early Bitcoin releases did. Parame
 
 **If you lose your wallet.dat file or forget your passphrase, your coins are permanently lost.** There is no recovery mechanism, no password reset, no customer support. You are responsible for your keys. You are responsible for your backups. You are responsible for your mistakes.
 
-The main protocol logic, networking, transaction validation, and wallet behavior remain consistent with Bitcoin v0.3.0. This repository reflects the exact mainnet now running. No further consensus changes should be expected post-release.
+**The protocol logic, networking, transaction validation, and wallet behavior implement Bitcoin v0.3.19 - Satoshi's final release with all critical security fixes in place. This repository reflects the exact mainnet now running. The protocol is complete. No further consensus changes will be made.**
 
 ---
 
@@ -69,7 +69,7 @@ The main protocol logic, networking, transaction validation, and wallet behavior
 
 ---
 
-## What Changed From Bitcoin v0.3.0
+## What Changed From Original Bitcoin
 
 ### Code Changes Summary
 
@@ -79,7 +79,18 @@ The main protocol logic, networking, transaction validation, and wallet behavior
 | Proof-of-Work | SHA-256 → Yespower 1.0 (N=2048, r=32) | CPU-friendly, GPU/ASIC-resistant |
 | Network | new genesis block | separate network from BTC |
 
-No features. No protocol changes. No layers. No "improvements."
+### Security Fixes Inherited from v0.3.19
+
+Between Bitcoin v0.3.0 (July 2010) and v0.3.19 (December 2010), Satoshi addressed critical security issues:
+
+- **Value Overflow Protection** (v0.3.9, August 2010) - Fixed integer overflow bug that allowed creating 184 billion coins. Bitcoin forked to reject the invalid chain. Bitok launches with this fix already in place.
+- **Blockchain Checkpoints** (v0.3.2) - Prevents deep chain reorganizations
+- **DoS Protection** (v0.3.19) - Block size limits, message limits, resource exhaustion protection
+- **IsStandard() Filter** (v0.3.18) - Only relay and mine known transaction types
+
+Unlike Bitcoin, which forked once to fix the overflow bug, Bitok launches with all security fixes from day one. No forks. No compromises. The protocol is complete.
+
+No features. No layers. No "improvements."
 
 See [BITOKPOW.md](BITOKPOW.md) for technical details on the Yespower proof-of-work algorithm.
 
@@ -136,7 +147,7 @@ The GUI provides a user-friendly interface for:
 
 ## Mining
 
-Mining on Bitok works exactly as it did in Bitcoin v0.3.0, except it uses Yespower instead of SHA-256.
+Mining on Bitok works exactly as it did in early Bitcoin (v0.3.19), except it uses Yespower instead of SHA-256.
 
 Enable mining:
 ```bash
@@ -162,7 +173,7 @@ Short version:
 
 Bitcoin was meant to be peer-to-peer electronic cash. Mining was meant to be accessible to everyone. The protocol was meant to be simple and unchanging. Privacy was meant to be natural, not bolted on. There were no leaders, no roadmaps, no foundations.
 
-Bitcoin v0.3.0 embodied these principles. Bitok preserves that design unchanged.
+Bitcoin v0.3.19 represented the completion of Satoshi's design - all critical security issues addressed, protocol stable and tested. Bitok preserves that complete design.
 
 ## What This Is Not
 
@@ -180,9 +191,9 @@ This is not trying to be Bitcoin. Bitcoin already exists and has made its choice
 
 ## Security Notice
 
-This is code from 2010, adapted for modern systems. The chain is subject to legacy consensus design; modern defenses such as BIP protocols and script upgrades are absent.
+This is code from 2010, adapted for modern systems. The chain implements Satoshi-era consensus design; modern additions such as BIP protocols and script upgrades are intentionally absent.
 
-The same security model as Bitcoin v0.3.0. Modern cryptography (OpenSSL 3.x). GPU-resistant mining (Yespower). No modern "features" (good). No guarantees (as intended).
+The same security model as Bitcoin v0.3.19 - all critical fixes in place, protocol complete and stable. Modern cryptography (OpenSSL 3.x). GPU-resistant mining (Yespower). No post-Satoshi "features" (good). No guarantees (as intended).
 
 You are responsible for your keys. You are responsible for your node. You are responsible for your mistakes.
 
@@ -206,7 +217,7 @@ MIT/X11 License - See [license.txt](license.txt)
 
 ## Authors
 
-Satoshi Nakamoto - original Bitcoin v0.3.0 (2009-2010)
+Satoshi Nakamoto - original Bitcoin v0.3.0 through v0.3.19 (2009-2010)
 Tom Elvis Jedusor - system compatibility updates and Yespower integration (present)
 
 ## Links

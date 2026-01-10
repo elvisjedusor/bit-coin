@@ -12,7 +12,7 @@ This implements what Satoshi Nakamoto requested but never received: a mining alg
 
 ### What Changed
 
-Bitcoin v0.3.0 (original):
+Bitcoin (original SHA-256):
 ```cpp
 uint256 hash = block.GetHash();  // Double SHA-256
 if (hash <= target) { /* block found */ }
@@ -24,7 +24,7 @@ uint256 hash = YespowerHashBlock(&block, 80);  // Yespower
 if (hash <= target) { /* block found */ }
 ```
 
-The entire change is swapping one hash function for another. Everything else — difficulty adjustment, block validation, consensus rules — remains exactly as Satoshi wrote it.
+The entire change is swapping one hash function for another. Everything else — difficulty adjustment, block validation, consensus rules — remains exactly as Satoshi wrote it in Bitcoin v0.3.19.
 
 ---
 
@@ -266,7 +266,7 @@ SHA-256 verification is extremely fast (~1 microsecond per block header).
 
 Yespower verification is slower (~10 milliseconds per block header) but still fast enough for block propagation and validation.
 
-For context, Bitcoin v0.3.0 has 10-minute block times. A 10ms verification delay is negligible.
+For context, Bitcoin has 10-minute block times. A 10ms verification delay is negligible.
 
 ---
 
@@ -301,7 +301,7 @@ The Yespower implementation in Bitok consists of:
 3. `yespower-opt.c` - SIMD optimizations (AVX/AVX2/AVX512)
 4. `yespower_dispatch.c` - runtime CPU feature detection
 
-Integration points in Bitcoin v0.3.0 code:
+Integration points in Bitcoin v0.3.19 code:
 
 **main.cpp** - Block validation:
 ```cpp
@@ -350,7 +350,7 @@ Other options (Argon2, RandomX, etc.) were considered. Yespower was chosen for i
 
 ### Can this be changed later?
 
-No. The proof-of-work algorithm is part of the consensus rules. Changing it would require a hard fork and defeat the purpose of preserving Bitcoin v0.3.0.
+No. The proof-of-work algorithm is part of the consensus rules. Changing it would require a hard fork and defeat the purpose of preserving Satoshi's design.
 
 ### What about quantum computers?
 
@@ -373,4 +373,4 @@ This is not innovation. This is restoration.
 - Yespower whitepaper: https://www.openwall.com/yespower/
 - scrypt specification: https://tools.ietf.org/html/rfc7914
 - Satoshi's GPU mining quotes: https://satoshi.nakamotoinstitute.org/quotes/mining/
-- Bitcoin v0.3.0 source: https://github.com/bitcoin/bitcoin/tree/v0.3.0
+- Bitcoin v0.3.19 source: https://github.com/bitcoin/bitcoin/tree/v0.3.19

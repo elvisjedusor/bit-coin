@@ -2,17 +2,17 @@
 
 Bitcoin was never meant to be finished. It was meant to be unleashed.
 
-Satoshi Nakamoto wrote the code, launched the network, fixed critical bugs and then walked away. That was not abandonment. That was completion. A system that depends on its creator is not decentralized.
+Satoshi Nakamoto wrote the code, launched the network, fixed critical bugs, and then walked away. That was not abandonment. That was completion. A system that depends on its creator is not decentralized.
 
-Bitcoin v0.3.0 was the last release under that principle. Everything after that is history. Not destiny.
+Bitcoin v0.3.19 was the last release under Satoshi's direct involvement. Everything after that is history. Not destiny.
 
 ## Running Bitok
 
 This is not a proposal. This is not a fork to convince anyone. This is not an argument on a forum.
 
-This is Bitcoin v0.3.0 resurrected.
+This is Bitcoin v0.3.19 - the complete Satoshi-era codebase.
 
-The same rules. The same behavior. The same philosophy. Adapted only as much as required to run on modern operating systems. No features added. No ideology injected. No attempt to "fix" Bitcoin according to modern tastes.
+The same rules. The same behavior. The same philosophy. All critical security fixes in place from day one. Adapted only as much as required to run on modern operating systems and resist GPU mining. No features added. No ideology injected. No attempt to "fix" Bitcoin according to modern tastes.
 
 This is not BTC. It does not compete with BTC. BTC is what Bitcoin became after years of social negotiation and ideological drift.
 
@@ -24,7 +24,7 @@ Bitcoin did not begin as an ideology. It began as software that solved a problem
 
 The whitepaper is short because the system was not supposed to be debated into existence. It was supposed to run. And it did.
 
-In v0.3.0, Bitcoin already worked as peer-to-peer electronic cash. Nodes discovered each other. Transactions propagated. Blocks were mined. Wallets generated keys automatically. Addresses were disposable. Balance mattered more than attribution.
+By v0.3.19, Bitcoin worked as peer-to-peer electronic cash. Critical security issues had been addressed. Nodes discovered each other. Transactions propagated. Blocks were mined. Wallets generated keys automatically. Addresses were disposable. Balance mattered more than attribution.
 
 Privacy emerged naturally because the software handled complexity for the user instead of lecturing them about "best practices".
 
@@ -96,7 +96,7 @@ A system ordinary people cannot reason about is not trustless. It is opaque.
 
 One of the most damaging lies modern Bitcoin teaches is that a wallet is an address and a private key. That idea did not exist in early Bitcoin.
 
-In v0.3.0, wallets managed pools of keys. Addresses were ephemeral. You did not build identity around them. You did not reuse them. You did not expose your financial graph to the world by default.
+In the Satoshi-era code (through v0.3.19), wallets managed pools of keys. Addresses were ephemeral. You did not build identity around them. You did not reuse them. You did not expose your financial graph to the world by default.
 
 Privacy was not a feature. It was an outcome of sane design.
 
@@ -116,9 +116,9 @@ Turning Bitcoin into a container for arbitrary data does not make it more free. 
 
 This is not evolution. This is repurposing.
 
-## What Changed From Bitcoin v0.3.0
+## What Changed From Original Bitcoin
 
-Bitok is Bitcoin v0.3.0 with exactly three categories of changes:
+Bitok is Bitcoin v0.3.19 with exactly three categories of changes:
 
 ### 1. Modern System Compatibility
 
@@ -140,9 +140,9 @@ New genesis block hash: `0x0290400ea28d3fe79d102ca6b7cd11cee5eba9f17f2046c303d92
 
 Separate network from BTC (no interference, no confusion). Same consensus rules, same economics, same peer-to-peer behavior.
 
-That is it. Everything else is exactly as Satoshi wrote it in 2010.
+Unlike Bitcoin, which forked once in August 2010 to fix the overflow bug, Bitok launches with all Satoshi's fixes already in place. The protocol is complete. No forks. No compromises.
 
-No features added. No protocol extensions. No layers. No abstractions. No "improvements."
+No features added beyond what Satoshi implemented. No protocol extensions. No layers. No abstractions. No "improvements."
 
 ## No Leaders, No Roadmap, No Permission
 

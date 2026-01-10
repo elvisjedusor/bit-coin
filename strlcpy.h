@@ -14,8 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// strlcpy/strlcat are BSD functions, not available in glibc until 2.38
-// Provide inline implementations for portability
+// strlcpy/strlcat are BSD functions, added to glibc in 2.38
+// Provide inline implementations for older systems
+#if defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 38))
+#define HAVE_STRLCPY 1
+#endif
+
 #if !defined(HAVE_STRLCPY) && !defined(__OpenBSD__) && !defined(__FreeBSD__) && !defined(__APPLE__)
 
 /*

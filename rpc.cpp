@@ -889,8 +889,6 @@ Value getrawmempool(const Array& params, bool fHelp)
 }
 
 
-extern CCriticalSection cs_mapTransactions;
-
 Value listunspent(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() > 2)

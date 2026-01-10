@@ -1436,6 +1436,7 @@ public:
 
 
 extern map<uint256, CTransaction> mapTransactions;
+extern CCriticalSection cs_mapTransactions;
 extern map<uint256, CWalletTx> mapWallet;
 extern vector<uint256> vWalletUpdated;
 extern CCriticalSection cs_mapWallet;

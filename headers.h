@@ -28,6 +28,8 @@
 #endif
 #endif
 
+#include <string>
+
 #if wxUSE_GUI
 #include <wx/wx.h>
 #include <wx/stdpaths.h>
@@ -35,8 +37,10 @@
 #include <wx/utils.h>
 #include <wx/clipbrd.h>
 #include <wx/taskbar.h>
+#define _STR(x) (wxString(_(x)).ToStdString())
 #else
 #define _(x) (x)
+#define _STR(x) std::string(x)
 #define wxOK 0
 #define wxICON_EXCLAMATION 0
 #define wxICON_ERROR 0

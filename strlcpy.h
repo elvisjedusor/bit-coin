@@ -14,8 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// Modern glibc has strlcpy/strlcat built-in, so skip if already defined
-#ifndef __GLIBC__
+// strlcpy/strlcat are BSD functions, not available in glibc until 2.38
+// Provide inline implementations for portability
+#if !defined(HAVE_STRLCPY) && !defined(__OpenBSD__) && !defined(__FreeBSD__) && !defined(__APPLE__)
 
 /*
  * Copy src to string dst of size siz.  At most siz-1 characters
@@ -86,4 +87,4 @@ inline size_t strlcat(char *dst, const char *src, size_t siz)
     return(dlen + (s - src)); /* count does not include NUL */
 }
 
-#endif // __GLIBC__
+#endif // !HAVE_STRLCPY && !BSD && !APPLE

@@ -4,13 +4,15 @@ Bitcoin was never meant to be finished. It was meant to be unleashed.
 
 Satoshi Nakamoto wrote the code, launched the network, fixed critical bugs, and then walked away. That was not abandonment. That was completion. A system that depends on its creator is not decentralized.
 
+Between July 2010 (v0.3.0) and December 2010 (v0.3.19), Satoshi worked with early developers to address critical security issues discovered in production. The value overflow incident in August 2010 - where an attacker created 184 billion coins - forced Bitcoin's only consensus fork during Satoshi's tenure. These fixes were necessary, not ideological.
+
 Bitcoin v0.3.19 was the last release under Satoshi's direct involvement. Everything after that is history. Not destiny.
 
 ## Running Bitok
 
 This is not a proposal. This is not a fork to convince anyone. This is not an argument on a forum.
 
-This is Bitcoin v0.3.19 - the complete Satoshi-era codebase.
+This is Bitcoin v0.3.19 - the complete Satoshi-era codebase, run as a separate chain from genesis.
 
 The same rules. The same behavior. The same philosophy. All critical security fixes in place from day one. Adapted only as much as required to run on modern operating systems and resist GPU mining. No features added. No ideology injected. No attempt to "fix" Bitcoin according to modern tastes.
 
@@ -140,7 +142,15 @@ New genesis block hash: `0x0290400ea28d3fe79d102ca6b7cd11cee5eba9f17f2046c303d92
 
 Separate network from BTC (no interference, no confusion). Same consensus rules, same economics, same peer-to-peer behavior.
 
-Unlike Bitcoin, which forked once in August 2010 to fix the overflow bug, Bitok launches with all Satoshi's fixes already in place. The protocol is complete. No forks. No compromises.
+That is it. Everything else is exactly as Satoshi wrote it between 2009 and December 2010.
+
+Bitcoin v0.3.19 includes all critical security fixes from the Satoshi era:
+- Value overflow protection (prevents 184 billion coin bug)
+- Blockchain checkpoints (prevents deep reorganizations)
+- DoS limits (block size, message limits)
+- IsStandard() filter (only mines known transaction types)
+
+Unlike Bitcoin, which forked once in August 2010 to fix the overflow bug, Bitok launches with all fixes already in place. The protocol is complete. No forks. No compromises.
 
 No features added beyond what Satoshi implemented. No protocol extensions. No layers. No abstractions. No "improvements."
 

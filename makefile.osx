@@ -8,8 +8,10 @@
 CXX ?= clang++
 HOMEBREW_PREFIX ?= $(shell brew --prefix 2>/dev/null || echo /usr/local)
 
-# Architecture - build universal binary by default
-ARCH ?= arm64 x86_64
+# Architecture - detect native architecture automatically
+# Homebrew libraries are architecture-specific, so build for native arch
+NATIVE_ARCH := $(shell uname -m)
+ARCH ?= $(NATIVE_ARCH)
 ARCH_FLAGS = $(foreach arch,$(ARCH),-arch $(arch))
 
 # Compiler flags
@@ -43,13 +45,25 @@ LIBPATHS = \
     -L"$(HOMEBREW_PREFIX)/opt/berkeley-db@4/lib"
 
 # Libraries for daemon (no GUI)
+# Note: Modern Boost (1.69+) made boost_system/filesystem header-only
+# Try to link them if available, but don't fail if they're not found
 LIBS_DAEMON = \
-    -lboost_system \
-    -lboost_filesystem \
     -ldb_cxx-4.8 \
     -lssl \
     -lcrypto \
     -lpthread
+
+# Check if boost libraries exist and add them if found
+BOOST_SYSTEM_EXISTS := $(shell test -e $(HOMEBREW_PREFIX)/lib/libboost_system.dylib -o -e $(HOMEBREW_PREFIX)/lib/libboost_system.a && echo yes)
+BOOST_FS_EXISTS := $(shell test -e $(HOMEBREW_PREFIX)/lib/libboost_filesystem.dylib -o -e $(HOMEBREW_PREFIX)/lib/libboost_filesystem.a && echo yes)
+
+ifeq ($(BOOST_SYSTEM_EXISTS),yes)
+    LIBS_DAEMON += -lboost_system
+endif
+
+ifeq ($(BOOST_FS_EXISTS),yes)
+    LIBS_DAEMON += -lboost_filesystem
+endif
 
 # Libraries for GUI
 LIBS_GUI = $(WXLIBS) $(LIBS_DAEMON)
@@ -80,7 +94,8 @@ OBJS_CRYPTO = \
 # Yespower object files (ASIC-resistant PoW)
 OBJS_YESPOWER = \
     obj/yespower/yespower-opt.o \
-    obj/yespower/sha256-yp.o
+    obj/yespower/sha256-yp.o \
+    obj/yespower/yespower_dispatch.o
 
 # Object files for GUI
 OBJS_GUI = \
@@ -150,13 +165,17 @@ obj/sha.o: sha.cpp sha.h
 	$(CXX) -c $(CXXFLAGS) -O3 $(DEFS) $(INCLUDEPATHS) -o $@ $<
 
 # Optimized crypto - SHA256 base implementation
-# Build for x86_64 only (Apple Silicon will use standard implementation)
+# Builds for native architecture (supports both arm64 and x86_64)
 obj/crypto/sha256.o: crypto/sha256.cpp crypto/sha256.h crypto/cpuid.h
-	$(CXX) -c $(CXXFLAGS) -O3 $(DEFS) $(CRYPTO_DEFS) $(INCLUDEPATHS) -arch x86_64 -o $@ $<
+	$(CXX) -c $(CXXFLAGS) -O3 $(DEFS) $(CRYPTO_DEFS) $(INCLUDEPATHS) -o $@ $<
 
 # Optimized crypto - SHA-NI hardware acceleration (x86_64 Intel only)
+# For arm64 builds, this will be built but SHA-NI won't be used at runtime
+# Note: -msha flag is required for SHA-NI intrinsics on x86_64
+SHANI_COMPILE_FLAGS = $(if $(filter x86_64,$(NATIVE_ARCH)),$(SHANI_FLAGS_X86),)
+
 obj/crypto/sha256_shani.o: crypto/sha256_shani.cpp crypto/sha256.h
-	$(CXX) -c $(CXXFLAGS) -O3 $(DEFS) $(CRYPTO_DEFS) $(SHANI_FLAGS_X86) $(INCLUDEPATHS) -arch x86_64 -o $@ $<
+	$(CXX) -c $(CXXFLAGS) -O3 $(DEFS) $(CRYPTO_DEFS) $(SHANI_COMPILE_FLAGS) $(INCLUDEPATHS) -o $@ $<
 
 # Yespower - ASIC-resistant proof-of-work algorithm
 # AUTO-OPTIMIZED for single-arch builds: Uses -march=native to detect YOUR CPU
@@ -169,6 +188,9 @@ obj/yespower/yespower-opt.o: yespower-opt.c yespower.h yespower-platform.c sha25
 	$(CC) -c $(YESPOWER_FLAGS) $(DEFS) $(INCLUDEPATHS) $(ARCH_FLAGS) -o $@ $<
 
 obj/yespower/sha256-yp.o: sha256.c sha256.h
+	$(CC) -c $(YESPOWER_FLAGS) $(DEFS) $(INCLUDEPATHS) $(ARCH_FLAGS) -o $@ $<
+
+obj/yespower/yespower_dispatch.o: yespower_dispatch.c yespower_dispatch.h yespower.h
 	$(CC) -c $(YESPOWER_FLAGS) $(DEFS) $(INCLUDEPATHS) $(ARCH_FLAGS) -o $@ $<
 
 # Clean
@@ -202,9 +224,9 @@ bundle: bitok
 	@echo '  <key>CFBundleName</key>' >> Bitok.app/Contents/Info.plist
 	@echo '  <string>Bitok</string>' >> Bitok.app/Contents/Info.plist
 	@echo '  <key>CFBundleVersion</key>' >> Bitok.app/Contents/Info.plist
-	@echo '  <string>0.3.0</string>' >> Bitok.app/Contents/Info.plist
+	@echo '  <string>0.3.19</string>' >> Bitok.app/Contents/Info.plist
 	@echo '  <key>CFBundleShortVersionString</key>' >> Bitok.app/Contents/Info.plist
-	@echo '  <string>0.3.0</string>' >> Bitok.app/Contents/Info.plist
+	@echo '  <string>0.3.19</string>' >> Bitok.app/Contents/Info.plist
 	@echo '  <key>CFBundlePackageType</key>' >> Bitok.app/Contents/Info.plist
 	@echo '  <string>APPL</string>' >> Bitok.app/Contents/Info.plist
 	@echo '  <key>LSMinimumSystemVersion</key>' >> Bitok.app/Contents/Info.plist

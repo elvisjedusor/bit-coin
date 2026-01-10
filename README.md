@@ -1,9 +1,10 @@
-# Bitok 0.3.19 (Mainnet)
+# Bitok 0.3.19 (Mainnet is Live)
 
-Bitok 0.3.19 is a restored release of Bitcoin v0.3.19 (2010), the last version released under Satoshi Nakamoto's direct involvement. The software preserves the original behavior and operating model of early Bitcoin, while adapting mining to keep GPU and ASIC hardware inefficient.
+Bitcoin was never meant to be finished. It was meant to be unleashed. Satoshi Nakomoto wrote the code, launched the network, fixed critical bugs, and then walked away. That was not abandonment. That was completion. A system that depends on its creator is not decentralized. v0.3.19 was the last release under Satoshi's direct involvement. Everything after that is history. Not destiny.
 
-BITOK is not BTC.
-It does not connect to, interact with, or fork the Bitcoin mainnet.
+Bitok is Bitcoin v0.3.19 - the complete Satoshi-era codebase, run as a separate chain from genesis. The same rules. The same behavior. The same philosophy. All critical security fixes in place from day one. Adapted only as much as required **to run** on modern operating systems and **resist GPU mining**. No features added. No ideology injected. No attempt to "fix" Bitcoin according to modern tastes.
+
+This is not BTC. It does not compete with BTC. BTC is what Bitcoin became after years of social negotiation and ideological drift. Bitok is what Bitcoin was before it was captured by its own caretakers.
 
 ## Overview
 
@@ -49,7 +50,7 @@ Peer discovery uses IRC bootstrap, exactly as early Bitcoin releases did. Parame
 
 **If you lose your wallet.dat file or forget your passphrase, your coins are permanently lost.** There is no recovery mechanism, no password reset, no customer support. You are responsible for your keys. You are responsible for your backups. You are responsible for your mistakes.
 
-**The protocol logic, networking, transaction validation, and wallet behavior implement Bitcoin v0.3.19 - Satoshi's final release with all critical security fixes in place. This repository reflects the exact mainnet now running. The protocol is complete. No further consensus changes will be made.**
+The protocol logic, networking, transaction validation, and wallet behavior implement Bitcoin v0.3.19 - Satoshi's final release with all critical security fixes in place. This repository reflects the exact mainnet now running. The protocol is complete. No further consensus changes will be made.
 
 ---
 
@@ -217,7 +218,7 @@ MIT/X11 License - See [license.txt](license.txt)
 
 ## Authors
 
-Satoshi Nakamoto - original Bitcoin v0.3.0 through v0.3.19 (2009-2010)
+Satoshi Nakamoto (2009-2010)
 Tom Elvis Jedusor - system compatibility updates and Yespower integration (present)
 
 ## Links

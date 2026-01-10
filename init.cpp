@@ -438,20 +438,20 @@ bool CMyApp::OnInit2()
     printf("Loading addresses...\n");
     nStart = GetTimeMillis();
     if (!LoadAddresses())
-        strErrors += _("Error loading addr.dat      \n");
+        strErrors += _STR("Error loading addr.dat      \n");
     printf(" addresses   %15" PRI64d "ms\n", GetTimeMillis() - nStart);
 
     printf("Loading block index...\n");
     nStart = GetTimeMillis();
     if (!LoadBlockIndex())
-        strErrors += _("Error loading blkindex.dat      \n");
+        strErrors += _STR("Error loading blkindex.dat      \n");
     printf(" block index %15" PRI64d "ms\n", GetTimeMillis() - nStart);
 
     printf("Loading wallet...\n");
     nStart = GetTimeMillis();
     bool fFirstRun;
     if (!LoadWallet(fFirstRun))
-        strErrors += _("Error loading wallet.dat      \n");
+        strErrors += _STR("Error loading wallet.dat      \n");
     printf(" wallet      %15" PRI64d "ms\n", GetTimeMillis() - nStart);
 
     // Initialize nLimitProcessors to CPU count - 1 if not set (leave 1 core for system)
@@ -506,7 +506,7 @@ bool CMyApp::OnInit2()
     {
         string strMatch = mapArgs["-printblock"];
         int nFound = 0;
-        for (map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.begin(); mi != mapBlockIndex.end(); ++mi)
+        for (auto mi = mapBlockIndex.begin(); mi != mapBlockIndex.end(); ++mi)
         {
             uint256 hash = (*mi).first;
             if (strncmp(hash.ToString().c_str(), strMatch.c_str(), strMatch.size()) == 0)
@@ -558,7 +558,7 @@ bool CMyApp::OnInit2()
     if (mapArgs.count("-proxy"))
     {
         fUseProxy = true;
-        addrProxy = CAddress(mapArgs["-proxy"]);
+        addrProxy.SetAddress(mapArgs["-proxy"]);
         if (!addrProxy.IsValid())
         {
             wxMessageBox(_("Invalid -proxy address"), "Bitok");
@@ -849,7 +849,7 @@ bool AppInit(int argc, char* argv[])
     {
         string strMatch = mapArgs["-printblock"];
         int nFound = 0;
-        for (map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.begin(); mi != mapBlockIndex.end(); ++mi)
+        for (auto mi = mapBlockIndex.begin(); mi != mapBlockIndex.end(); ++mi)
         {
             uint256 hash = (*mi).first;
             if (strncmp(hash.ToString().c_str(), strMatch.c_str(), strMatch.size()) == 0)
@@ -871,7 +871,7 @@ bool AppInit(int argc, char* argv[])
     if (mapArgs.count("-proxy"))
     {
         fUseProxy = true;
-        addrProxy = CAddress(mapArgs["-proxy"]);
+        addrProxy.SetAddress(mapArgs["-proxy"]);
         if (!addrProxy.IsValid())
         {
             fprintf(stderr, "Invalid -proxy address\n");

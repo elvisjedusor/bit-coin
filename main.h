@@ -1304,7 +1304,7 @@ public:
 
     explicit CBlockLocator(uint256 hashBlock)
     {
-        map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hashBlock);
+        auto mi = mapBlockIndex.find(hashBlock);
         if (mi != mapBlockIndex.end())
             Set((*mi).second);
     }
@@ -1340,7 +1340,7 @@ public:
         int nStep = 1;
         foreach(const uint256& hash, vHave)
         {
-            map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hash);
+            auto mi = mapBlockIndex.find(hash);
             if (mi != mapBlockIndex.end())
             {
                 CBlockIndex* pindex = (*mi).second;
@@ -1359,7 +1359,7 @@ public:
         // Find the first block the caller has in the main chain
         foreach(const uint256& hash, vHave)
         {
-            map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hash);
+            auto mi = mapBlockIndex.find(hash);
             if (mi != mapBlockIndex.end())
             {
                 CBlockIndex* pindex = (*mi).second;
@@ -1375,7 +1375,7 @@ public:
         // Find the first block the caller has in the main chain
         foreach(const uint256& hash, vHave)
         {
-            map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hash);
+            auto mi = mapBlockIndex.find(hash);
             if (mi != mapBlockIndex.end())
             {
                 CBlockIndex* pindex = (*mi).second;

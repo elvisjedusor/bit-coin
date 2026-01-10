@@ -711,30 +711,6 @@ def process_withdrawal(rpc, withdrawal_id, address, amount):
 
 ---
 
-### listtransactions
-
-Lists recent transactions.
-
-**Parameters:**
-- `count` (number, optional, default=10) - Number of transactions to return
-- `includegenerated` (boolean, optional, default=false) - Include generated (mined) transactions
-
-**Returns:** Array of transaction objects
-
-**Example:**
-```bash
-./bitokd listtransactions 20 true
-```
-
-**Response:**
-```json
-["not implemented yet"]
-```
-
-**Note:** This command is not fully implemented in Bitcoin v0.3.0. Use `listreceivedbyaddress` for deposit tracking instead.
-
----
-
 ## Mining Operations
 
 ### getgenerate
@@ -1275,7 +1251,7 @@ The RPC interface returns HTTP status codes and JSON-RPC errors:
 | Invalid address | Malformed address | Validate address format |
 | Insufficient funds | Not enough balance | Check balance before sending |
 | Invalid amount | Amount out of range | Use 0.01 to 21000000 |
-| Wallet locked | Wallet encrypted | Unlock wallet (not in v0.3.0) |
+| Wallet locked | Wallet encrypted | Unlock wallet (not in v0.3.19) |
 
 ### Error Handling Example
 
@@ -1506,8 +1482,8 @@ def send_with_logging(rpc, address, amount, user_id):
 
 ### Version History
 
-- **Bitcoin v0.3.0** (2010) - Original implementation by Satoshi Nakamoto
-- **Bitok** (2016) - Modern system compatibility, Yespower integration
+- **Bitcoin v0.3.19** (2010) - Original implementation by Satoshi Nakamoto
+- **Bitok** (2026) - Modern system compatibility, Yespower integration
 
 ### Additional Resources
 
@@ -1529,4 +1505,4 @@ For technical support and integration assistance:
 **Last Updated:** 2025
 **License:** MIT/X11
 
-*This documentation covers the RPC API as implemented in Bitcoin v0.3.0 / Bitok. Always test thoroughly in a development environment before deploying to production.*
+*This documentation covers the RPC API as implemented in Bitcoin v0.3.19 / Bitok. Always test thoroughly in a development environment before deploying to production.*

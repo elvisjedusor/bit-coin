@@ -183,4 +183,190 @@ install: bitokd
 install-gui: bitok
 	install -m 755 bitok /usr/local/bin/
 
-.PHONY: all daemon gui clean directories install install-gui
+# =============================================================================
+# RELEASE BUILD TARGETS
+# =============================================================================
+# For distribution binaries that work on most Linux systems (2015+ CPUs)
+#
+# Usage:
+#   make release-daemon    # Static bitokd binary
+#   make release-gui       # GUI binary for AppImage
+#   make appimage          # Complete AppImage package
+#   make release           # Build both daemon and AppImage
+
+# Release architecture: x86-64-v3 works on Intel Haswell+ / AMD Excavator+ (2013+)
+# Use x86-64-v2 for older CPUs, or x86-64 for maximum compatibility
+RELEASE_ARCH ?= x86-64-v3
+
+# Release compiler flags (optimized, no debug, portable)
+RELEASE_CXXFLAGS = -std=c++11 -O3 -march=$(RELEASE_ARCH) -mtune=generic \
+    -Wno-invalid-offsetof -Wformat -Wno-deprecated-declarations \
+    -fno-strict-aliasing -fPIC
+
+# Static libraries for daemon (fully portable binary)
+# Requires: libboost-all-dev libdb-dev libssl-dev (static versions)
+LIBS_DAEMON_STATIC = \
+    -Wl,-Bstatic \
+    -lboost_system \
+    -lboost_filesystem \
+    -ldb \
+    -Wl,-Bdynamic \
+    -lssl \
+    -lcrypto \
+    -lpthread \
+    -ldl
+
+# Object files for release daemon
+OBJS_RELEASE_DAEMON = \
+    obj/release/util.o \
+    obj/release/script.o \
+    obj/release/bitcoin_db.o \
+    obj/release/net.o \
+    obj/release/irc.o \
+    obj/release/main.o \
+    obj/release/rpc.o \
+    obj/release/init.o \
+    obj/release/sha.o \
+    obj/release/crypto/sha256.o \
+    obj/release/crypto/sha256_shani.o \
+    obj/release/yespower/yespower-opt.o \
+    obj/release/yespower/sha256-yp.o \
+    obj/release/yespower/yespower_dispatch.o
+
+# Object files for release GUI
+OBJS_RELEASE_GUI = \
+    obj/release-gui/util.o \
+    obj/release-gui/script.o \
+    obj/release-gui/bitcoin_db.o \
+    obj/release-gui/net.o \
+    obj/release-gui/irc.o \
+    obj/release-gui/main.o \
+    obj/release-gui/rpc.o \
+    obj/release-gui/init.o \
+    obj/release-gui/ui.o \
+    obj/release-gui/uibase.o \
+    obj/release-gui/sha.o \
+    obj/release-gui/crypto/sha256.o \
+    obj/release-gui/crypto/sha256_shani.o \
+    obj/release-gui/yespower/yespower-opt.o \
+    obj/release-gui/yespower/sha256-yp.o \
+    obj/release-gui/yespower/yespower_dispatch.o
+
+# Yespower release flags (portable)
+YESPOWER_RELEASE_FLAGS = -O3 -funroll-loops -march=$(RELEASE_ARCH) -mtune=generic
+
+# Create release directories
+release-directories:
+	@mkdir -p obj/release obj/release/crypto obj/release/yespower
+	@mkdir -p obj/release-gui obj/release-gui/crypto obj/release-gui/yespower
+	@mkdir -p release
+
+# Release daemon object files
+obj/release/%.o: %.cpp $(HEADERS)
+	$(CXX) -c $(RELEASE_CXXFLAGS) $(DEFS_DAEMON) $(INCLUDEPATHS) -o $@ $<
+
+obj/release/sha.o: sha.cpp sha.h
+	$(CXX) -c $(RELEASE_CXXFLAGS) -O3 $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release/crypto/sha256.o: crypto/sha256.cpp crypto/sha256.h crypto/cpuid.h
+	$(CXX) -c $(RELEASE_CXXFLAGS) $(DEFS) $(CRYPTO_DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release/crypto/sha256_shani.o: crypto/sha256_shani.cpp crypto/sha256.h
+	$(CXX) -c $(RELEASE_CXXFLAGS) $(DEFS) $(CRYPTO_DEFS) $(SHANI_FLAGS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release/yespower/yespower-opt.o: yespower-opt.c yespower.h yespower-platform.c sha256.h
+	$(CC) -c $(YESPOWER_RELEASE_FLAGS) $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release/yespower/sha256-yp.o: sha256.c sha256.h
+	$(CC) -c $(YESPOWER_RELEASE_FLAGS) $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release/yespower/yespower_dispatch.o: yespower_dispatch.c yespower_dispatch.h
+	$(CC) -c -O2 -march=$(RELEASE_ARCH) $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+# Release GUI object files
+obj/release-gui/%.o: %.cpp $(HEADERS)
+	$(CXX) -c $(RELEASE_CXXFLAGS) $(DEFS_GUI) $(WXCXXFLAGS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release-gui/sha.o: sha.cpp sha.h
+	$(CXX) -c $(RELEASE_CXXFLAGS) -O3 $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release-gui/crypto/sha256.o: crypto/sha256.cpp crypto/sha256.h crypto/cpuid.h
+	$(CXX) -c $(RELEASE_CXXFLAGS) $(DEFS) $(CRYPTO_DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release-gui/crypto/sha256_shani.o: crypto/sha256_shani.cpp crypto/sha256.h
+	$(CXX) -c $(RELEASE_CXXFLAGS) $(DEFS) $(CRYPTO_DEFS) $(SHANI_FLAGS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release-gui/yespower/yespower-opt.o: yespower-opt.c yespower.h yespower-platform.c sha256.h
+	$(CC) -c $(YESPOWER_RELEASE_FLAGS) $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release-gui/yespower/sha256-yp.o: sha256.c sha256.h
+	$(CC) -c $(YESPOWER_RELEASE_FLAGS) $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+obj/release-gui/yespower/yespower_dispatch.o: yespower_dispatch.c yespower_dispatch.h
+	$(CC) -c -O2 -march=$(RELEASE_ARCH) $(DEFS) $(INCLUDEPATHS) -o $@ $<
+
+# Build static daemon for release
+release-daemon: release-directories $(OBJS_RELEASE_DAEMON)
+	$(CXX) $(RELEASE_CXXFLAGS) $(DEFS_DAEMON) -o release/bitokd \
+		$(LIBPATHS) $(OBJS_RELEASE_DAEMON) $(LIBS_DAEMON_STATIC) \
+		-static-libstdc++ -static-libgcc
+	strip --strip-all release/bitokd
+	@echo "Static daemon built: release/bitokd"
+	@ls -lh release/bitokd
+
+# Build GUI for release (dynamic linking for AppImage)
+release-gui: release-directories $(OBJS_RELEASE_GUI)
+	$(CXX) $(RELEASE_CXXFLAGS) $(DEFS_GUI) -o release/bitok \
+		$(LIBPATHS) $(OBJS_RELEASE_GUI) $(LIBS_GUI)
+	strip --strip-unneeded release/bitok
+	@echo "GUI built: release/bitok"
+	@ls -lh release/bitok
+
+# Build AppImage (requires linuxdeploy)
+appimage: release-gui
+	@echo "Building AppImage..."
+	@mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+	@cp release/bitok AppDir/usr/bin/
+	@echo "[Desktop Entry]" > AppDir/usr/share/applications/bitok.desktop
+	@echo "Type=Application" >> AppDir/usr/share/applications/bitok.desktop
+	@echo "Name=Bitok" >> AppDir/usr/share/applications/bitok.desktop
+	@echo "Exec=bitok" >> AppDir/usr/share/applications/bitok.desktop
+	@echo "Icon=bitok" >> AppDir/usr/share/applications/bitok.desktop
+	@echo "Categories=Finance;Network;" >> AppDir/usr/share/applications/bitok.desktop
+	@echo "Comment=Bitok Cryptocurrency Wallet" >> AppDir/usr/share/applications/bitok.desktop
+	@cp AppDir/usr/share/applications/bitok.desktop AppDir/
+	@if [ -f bitok.png ]; then \
+		cp bitok.png AppDir/usr/share/icons/hicolor/256x256/apps/; \
+		cp bitok.png AppDir/; \
+	else \
+		echo "Warning: bitok.png not found, AppImage will have no icon"; \
+	fi
+	@if command -v linuxdeploy >/dev/null 2>&1; then \
+		linuxdeploy --appdir AppDir --output appimage; \
+		mv Bitok*.AppImage release/ 2>/dev/null || true; \
+	elif [ -f ./linuxdeploy-x86_64.AppImage ]; then \
+		./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage; \
+		mv Bitok*.AppImage release/ 2>/dev/null || true; \
+	else \
+		echo ""; \
+		echo "linuxdeploy not found. To create AppImage:"; \
+		echo "  wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"; \
+		echo "  chmod +x linuxdeploy-x86_64.AppImage"; \
+		echo "  make appimage"; \
+	fi
+	@echo "AppImage build complete. Check release/ directory."
+
+# Build all release artifacts
+release: release-daemon appimage
+	@echo ""
+	@echo "=== Release build complete ==="
+	@ls -lh release/
+
+# Clean release artifacts
+clean-release:
+	-rm -rf obj/release obj/release-gui
+	-rm -rf release AppDir
+	-rm -f Bitok*.AppImage
+
+.PHONY: all daemon gui clean directories install install-gui \
+        release release-daemon release-gui appimage release-directories clean-release

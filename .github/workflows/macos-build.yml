@@ -1,0 +1,179 @@
+name: macOS Build
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: macOS Build (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-latest
+          - arch: x86_64
+            runner: macos-15-intel
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        brew install boost berkeley-db@4 openssl@3 wxwidgets
+
+    - name: Verify dependencies
+      run: |
+        brew list boost berkeley-db@4 openssl@3 wxwidgets
+        wx-config --version
+
+    - name: Build native binaries
+      run: |
+        make -f makefile.osx clean
+        make -f makefile.osx all
+
+    - name: Verify binaries
+      run: |
+        echo "=== bitokd info ==="
+        file bitokd
+        otool -L bitokd
+        ./bitokd -? || echo "Daemon test OK"
+        echo ""
+        echo "=== bitok info ==="
+        file bitok
+        otool -L bitok
+
+    - name: Strip binaries
+      run: |
+        strip bitokd
+        strip bitok
+
+    - name: Create .app bundle
+      run: |
+        make -f makefile.osx bundle
+
+    - name: Create release packages
+      run: |
+        # Version info
+        VERSION="0.3.19"
+        ARCH=$(uname -m)
+
+        # Create README for daemon
+        cat > README-DAEMON.txt << 'EOF'
+        Bitok v0.3.19 - macOS Daemon
+        ============================
+
+        QUICK START
+        -----------
+        1. Run daemon:
+           ./bitokd -daemon
+
+        2. Check status:
+           ./bitokd getinfo
+
+        3. Stop daemon:
+           ./bitokd stop
+
+        DATA LOCATION
+        -------------
+        Data directory: ~/Library/Application Support/Bitok/
+        Config: ~/Library/Application Support/Bitok/bitok.conf
+
+        VERIFY YOUR DOWNLOAD
+        ---------------------
+        Always verify checksums before running.
+
+        Target: macOS 11.0+
+        License: MIT
+        EOF
+
+        # Create README for GUI
+        cat > README-GUI.txt << 'EOF'
+        Bitok v0.3.19 - macOS GUI Wallet
+        =================================
+
+        QUICK START
+        -----------
+        Option 1 - Run .app bundle:
+          1. Copy Bitok.app to /Applications
+          2. Open from Applications folder
+
+        Option 2 - Run binary directly:
+          ./bitok
+
+        DATA LOCATION
+        -------------
+        Wallet: ~/Library/Application Support/Bitok/wallet.dat
+
+        IMPORTANT: Backup wallet.dat regularly!
+
+        Target: macOS 11.0+
+        License: MIT
+        EOF
+
+        # Create daemon tarball
+        tar -czf "bitokd-${VERSION}-macos-${ARCH}.tar.gz" bitokd README-DAEMON.txt license.txt
+
+        # Create GUI tarball (with .app bundle)
+        tar -czf "bitok-${VERSION}-macos-${ARCH}.tar.gz" Bitok.app README-GUI.txt license.txt
+
+        # Generate checksums
+        shasum -a 256 "bitokd-${VERSION}-macos-${ARCH}.tar.gz" > "bitokd-${VERSION}-macos-${ARCH}.tar.gz.sha256"
+        shasum -a 256 "bitok-${VERSION}-macos-${ARCH}.tar.gz" > "bitok-${VERSION}-macos-${ARCH}.tar.gz.sha256"
+
+        # Create master checksums file
+        cat > CHECKSUMS-MACOS.txt << EOF
+        Bitok v${VERSION} - macOS Release Checksums
+        ============================================
+
+        Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+        Platform: macOS 11.0+ (${ARCH})
+
+        Verify with:
+          shasum -a 256 -c CHECKSUMS-MACOS.txt
+
+        SHA-256 Checksums:
+        ==================
+
+        EOF
+
+        # Add checksums to master file
+        shasum -a 256 bitokd-${VERSION}-macos-${ARCH}.tar.gz >> CHECKSUMS-MACOS.txt
+        shasum -a 256 bitok-${VERSION}-macos-${ARCH}.tar.gz >> CHECKSUMS-MACOS.txt
+
+        # Display results
+        echo ""
+        echo "========================================="
+        echo "✓ macOS Release Packages Created (${ARCH})"
+        echo "========================================="
+        ls -lh bitokd-${VERSION}-macos-${ARCH}.tar.gz
+        ls -lh bitok-${VERSION}-macos-${ARCH}.tar.gz
+        echo ""
+        cat CHECKSUMS-MACOS.txt
+
+    - name: Upload daemon package
+      uses: actions/upload-artifact@v4
+      with:
+        name: bitokd-macos-${{ matrix.arch }}
+        path: |
+          bitokd-0.3.19-macos-*.tar.gz
+          bitokd-0.3.19-macos-*.tar.gz.sha256
+
+    - name: Upload GUI package
+      uses: actions/upload-artifact@v4
+      with:
+        name: bitok-macos-${{ matrix.arch }}
+        path: |
+          bitok-0.3.19-macos-*.tar.gz
+          bitok-0.3.19-macos-*.tar.gz.sha256
+
+    - name: Upload checksums
+      uses: actions/upload-artifact@v4
+      with:
+        name: checksums-macos-${{ matrix.arch }}
+        path: CHECKSUMS-MACOS.txt

@@ -251,7 +251,9 @@ void ThreadIRCSeed(void* parg)
                 // index 7 is limited to 16 characters
                 // could get full length name at index 10, but would be different from join messages
                 strlcpy(pszName, vWords[7].c_str(), sizeof(pszName));
-                printf("IRC got who\n");
+                printf("IRC got who: nickname='%s' (field 7)\n", pszName);
+                if (vWords.size() >= 11)
+                    printf("  Also available: field 10='%s'\n", vWords[10].c_str());
             }
 
             if (vWords[1] == "JOIN" && vWords[0].size() > 1)
@@ -270,13 +272,19 @@ void ThreadIRCSeed(void* parg)
                 {
                     addr.nTime = GetAdjustedTime() - 51 * 60;
                     if (AddAddress(addr))
-                        printf("IRC got new address\n");
+                        printf("IRC got new address: %s\n", addr.ToString().c_str());
+                    else
+                        printf("IRC address already known: %s\n", addr.ToString().c_str());
                     nGotIRCAddresses++;
                 }
                 else
                 {
-                    printf("IRC decode failed\n");
+                    printf("IRC decode failed for: %s\n", pszName);
                 }
+            }
+            else if (pszName[0] != '\0')
+            {
+                printf("IRC skipping nickname (doesn't start with 'u'): %s\n", pszName);
             }
         }
         closesocket(hSocket);

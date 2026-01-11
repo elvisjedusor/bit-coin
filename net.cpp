@@ -877,9 +877,10 @@ void ThreadOpenConnections2(void* parg)
     int64 nStart = GetTime();
     loop
     {
-        // Wait
+        // Wait - shorter delay when we need more connections
         vnThreadsRunning[1]--;
-        Sleep(500);
+        int nSleepTime = (vNodes.size() < 4) ? 100 : 500;
+        Sleep(nSleepTime);
         const int nMaxConnections = 8;
         while (vNodes.size() >= nMaxConnections)
         {
@@ -894,15 +895,19 @@ void ThreadOpenConnections2(void* parg)
         CRITICAL_BLOCK(cs_mapAddresses)
         {
             static bool fSeedUsed;
+            static int64 nLastSeedAttempt = 0;
             bool fTOR = (fUseProxy && addrProxy.port == htons(9050));
-            if (mapAddresses.empty() && (GetTime() - nStart > 5 || fTOR))
+            bool fNeedMoreConnections = vNodes.size() < 4 && (GetTime() - nLastSeedAttempt > 60);
+            if ((mapAddresses.empty() && (GetTime() - nStart > 5 || fTOR)) || fNeedMoreConnections)
             {
+                if (fNeedMoreConnections)
+                    nLastSeedAttempt = GetTime();
                 printf("Using seed nodes for network bootstrap (%d seeds)\n", (int)ARRAYLEN(pnSeed));
                 for (int i = 0; i < ARRAYLEN(pnSeed); i++)
                 {
                     CAddress addr;
                     addr.ip = pnSeed[i];
-                    addr.port = htons(DEFAULT_PORT);
+                    addr.port = DEFAULT_PORT;
                     addr.nServices = NODE_NETWORK;
                     addr.nTime = GetTime() - 3 * 60 * 60;
                     printf("  Connecting to seed %d: %s\n", i, addr.ToString().c_str());
@@ -986,13 +991,18 @@ void ThreadOpenConnections2(void* parg)
                 if (nSinceLastSeen < 60 * 60)
                     nDelay = 10 * 60;
 
+                // When we have few connections, be more aggressive about retrying
+                if (vNodes.size() < 4 && nSinceLastSeen < 60 * 60)
+                    nDelay = 30; // 30 seconds when bootstrapping
+
                 // Limit retry frequency
                 if (nSinceLastTry < nDelay)
                     continue;
 
                 // If we have IRC, we'll be notified when they first come online,
                 // and again every 24 hours by the refresh broadcast.
-                if (nGotIRCAddresses > 0 && vNodes.size() >= 2 && nSinceLastSeen > 24 * 60 * 60)
+                // Maintain at least 4 connections before being selective about old addresses
+                if (nGotIRCAddresses > 0 && vNodes.size() >= 4 && nSinceLastSeen > 24 * 60 * 60)
                     continue;
 
                 // Only try the old stuff if we don't have enough connections

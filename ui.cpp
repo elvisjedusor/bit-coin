@@ -430,8 +430,8 @@ void CMainFrame::OnClose(wxCloseEvent& event)
     }
     else
     {
-        Destroy();
-        CreateThread(Shutdown, NULL);
+        Hide();
+        Shutdown(NULL);
     }
 }
 

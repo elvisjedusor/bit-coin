@@ -247,7 +247,7 @@ jobs:
 
             for dylib in Bitok.app/Contents/Frameworks/*.dylib "$APPBIN"; do
               if [ -f "$dylib" ]; then
-                deps=$(otool -L "$dylib" 2>/dev/null | grep -E "/opt/homebrew|/usr/local/opt" | awk '{print $1}' || true)
+                deps=$(otool -L "$dylib" 2>/dev/null | grep -E "/opt/homebrew|/usr/local/opt|/usr/local/Cellar" | awk '{print $1}' || true)
                 for dep in $deps; do
                   depname=$(basename "$dep")
                   if [ ! -f "Bitok.app/Contents/Frameworks/$depname" ]; then
@@ -345,18 +345,30 @@ jobs:
         install_name_tool -add_rpath "@executable_path/../Frameworks" "$APPBIN" 2>/dev/null || true
 
         echo "=== Comprehensive path fix (catch-all) ==="
-        for target in Bitok.app/Contents/Frameworks/*.dylib "$APPBIN"; do
-          if [ -f "$target" ]; then
-            deps=$(otool -L "$target" 2>/dev/null | grep -E "/opt/homebrew|/usr/local/opt" | awk '{print $1}' || true)
-            for dep in $deps; do
-              depname=$(basename "$dep")
-              if [ -f "Bitok.app/Contents/Frameworks/$depname" ]; then
-                echo "Fixing reference in $(basename $target): $dep -> @rpath/$depname"
-                install_name_tool -change "$dep" "@rpath/$depname" "$target" 2>/dev/null || true
+        fix_all_paths() {
+          local pass=0
+          local fixed=1
+          while [ "$fixed" -eq 1 ] && [ "$pass" -lt 5 ]; do
+            fixed=0
+            pass=$((pass + 1))
+            echo "Path fix pass $pass..."
+            for target in Bitok.app/Contents/Frameworks/*.dylib "$APPBIN"; do
+              if [ -f "$target" ]; then
+                deps=$(otool -L "$target" 2>/dev/null | grep -E "/opt/homebrew|/usr/local/opt|/usr/local/Cellar" | awk '{print $1}' || true)
+                for dep in $deps; do
+                  depname=$(basename "$dep")
+                  if [ -f "Bitok.app/Contents/Frameworks/$depname" ]; then
+                    echo "Fixing: $(basename $target): $dep -> @rpath/$depname"
+                    install_name_tool -change "$dep" "@rpath/$depname" "$target" 2>/dev/null || true
+                    fixed=1
+                  fi
+                done
               fi
             done
-          fi
-        done
+          done
+          echo "Path fixing completed after $pass passes"
+        }
+        fix_all_paths
 
         echo "=== Final verification ==="
         echo "--- App binary dependencies ---"
@@ -367,7 +379,7 @@ jobs:
         MISSING_DEPS=""
         HAS_ERRORS=0
         for dylib in Bitok.app/Contents/Frameworks/*.dylib; do
-          unbundled=$(otool -L "$dylib" 2>/dev/null | grep -E "/opt/homebrew|/usr/local/opt" | grep -v "@rpath" || true)
+          unbundled=$(otool -L "$dylib" 2>/dev/null | grep -E "/opt/homebrew|/usr/local/opt|/usr/local/Cellar" | grep -v "@rpath" || true)
           if [ -n "$unbundled" ]; then
             echo "ERROR: $(basename $dylib) has unbundled deps:"
             echo "$unbundled"
@@ -378,7 +390,7 @@ jobs:
 
         echo ""
         echo "--- Checking for non-rpath Homebrew references in binary ---"
-        if otool -L "$APPBIN" | grep -E "/opt/homebrew|/usr/local/opt" | grep -v "@rpath"; then
+        if otool -L "$APPBIN" | grep -E "/opt/homebrew|/usr/local/opt|/usr/local/Cellar" | grep -v "@rpath"; then
           echo "ERROR: Found unbundled Homebrew dependencies in app binary!"
           HAS_ERRORS=1
         else

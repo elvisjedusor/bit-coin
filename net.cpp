@@ -437,10 +437,12 @@ CNode* ConnectNode(CAddress addrConnect, int64 nTimeout)
     }
 
     /// debug print
+    double hoursSinceSeen = (addrConnect.nTime > 0) ? (double)(GetAdjustedTime() - addrConnect.nTime)/3600.0 : -1.0;
+    double hoursSinceTry = (addrConnect.nLastTry > 0) ? (double)(GetAdjustedTime() - addrConnect.nLastTry)/3600.0 : -1.0;
     printf("trying connection %s lastseen=%.1fhrs lasttry=%.1fhrs\n",
         addrConnect.ToStringLog().c_str(),
-        (double)(addrConnect.nTime - GetAdjustedTime())/3600.0,
-        (double)(addrConnect.nLastTry - GetAdjustedTime())/3600.0);
+        hoursSinceSeen,
+        hoursSinceTry);
 
     CRITICAL_BLOCK(cs_mapAddresses)
         mapAddresses[addrConnect.GetKey()].nLastTry = GetAdjustedTime();
@@ -765,11 +767,11 @@ void ThreadSocketHandler2(void* parg)
             //
             if (pnode->vSend.empty())
                 pnode->nLastSendEmpty = GetTime();
-            if (GetTime() - pnode->nTimeConnected > 60)
+            if (GetTime() - pnode->nTimeConnected > 120)
             {
                 if (pnode->nLastRecv == 0 || pnode->nLastSend == 0)
                 {
-                    printf("socket no message in first 60 seconds, %d %d\n", pnode->nLastRecv != 0, pnode->nLastSend != 0);
+                    printf("socket no message in first 120 seconds, %d %d\n", pnode->nLastRecv != 0, pnode->nLastSend != 0);
                     pnode->fDisconnect = true;
                 }
                 else if (GetTime() - pnode->nLastSend > 90*60 && GetTime() - pnode->nLastSendEmpty > 90*60)
@@ -878,13 +880,13 @@ void ThreadOpenConnections2(void* parg)
 
     // Initiate network connections
     int64 nStart = GetTime();
+    const int nMaxConnections = 8;
     loop
     {
         // Wait - shorter delay when we need more connections
         vnThreadsRunning[1]--;
         int nSleepTime = (vNodes.size() < 4) ? 100 : 500;
         Sleep(nSleepTime);
-        const int nMaxConnections = 8;
         while (vNodes.size() >= nMaxConnections)
         {
             Sleep(2000);
@@ -897,77 +899,98 @@ void ThreadOpenConnections2(void* parg)
 
         CRITICAL_BLOCK(cs_mapAddresses)
         {
-            static bool fSeedUsed;
             static int64 nLastSeedAttempt = 0;
-            bool fTOR = (fUseProxy && addrProxy.port == htons(9050));
-            bool fNeedMoreConnections = vNodes.size() < 4 && (GetTime() - nLastSeedAttempt > 60);
-            if ((mapAddresses.empty() && (GetTime() - nStart > 5 || fTOR)) || fNeedMoreConnections)
+            set<unsigned int> setSeed(pnSeed, pnSeed + ARRAYLEN(pnSeed));
+
+            int nCurrentConnections = vNodes.size();
+            int nSeedConnections = 0;
+            int nNonSeedConnections = 0;
+
+            CRITICAL_BLOCK(cs_vNodes)
             {
-                if (fNeedMoreConnections)
-                    nLastSeedAttempt = GetTime();
-                printf("Using seed nodes for network bootstrap (%d seeds)\n", (int)ARRAYLEN(pnSeed));
+                foreach(CNode* pnode, vNodes)
+                {
+                    if (setSeed.count(pnode->addr.ip))
+                        nSeedConnections++;
+                    else if (pnode->fSuccessfullyConnected)
+                        nNonSeedConnections++;
+                }
+            }
+
+            bool fNeedSeeds = (nCurrentConnections < 3) ||
+                              (nNonSeedConnections < 2 && nSeedConnections == 0);
+            bool fCanTrySeeds = (GetTime() - nLastSeedAttempt > 15);
+
+            if (fNeedSeeds && fCanTrySeeds)
+            {
+                nLastSeedAttempt = GetTime();
+                printf("Connecting to seed nodes (connections=%d, seeds=%d, others=%d)\n",
+                       nCurrentConnections, nSeedConnections, nNonSeedConnections);
+
                 for (int i = 0; i < ARRAYLEN(pnSeed); i++)
                 {
+                    if (FindNode(pnSeed[i]))
+                        continue;
+
                     CAddress addr;
                     addr.ip = pnSeed[i];
                     addr.port = DEFAULT_PORT;
                     addr.nServices = NODE_NETWORK;
-                    addr.nTime = GetTime() - 3 * 60 * 60;
-                    printf("  Connecting to seed %d: %s\n", i, addr.ToString().c_str());
+                    addr.nTime = GetTime();
+                    printf("  Seed %d: %s\n", i, addr.ToString().c_str());
                     AddAddress(addr);
                     OpenNetworkConnection(addr);
-                    Sleep(500);
+                    Sleep(200);
                 }
-                fSeedUsed = true;
             }
 
-            if (fSeedUsed && mapAddresses.size() > ARRAYLEN(pnSeed) + 100)
+            if (nNonSeedConnections >= 6 && nSeedConnections > 0 && nCurrentConnections >= nMaxConnections - 1)
             {
-                // Disconnect seed nodes only after we have established non-seed connections
-                // and have had time to sync blocks from seeds
-                set<unsigned int> setSeed(pnSeed, pnSeed + ARRAYLEN(pnSeed));
-                static int64 nSeedDisconnected;
-                static int64 nSeedConnectTime;
-                if (nSeedConnectTime == 0)
-                    nSeedConnectTime = GetTime();
-
-                // Count non-seed connections that have completed version handshake
-                int nNonSeedConnections = 0;
+                printf("Have %d non-seed connections, freeing seed slot\n", nNonSeedConnections);
                 CRITICAL_BLOCK(cs_vNodes)
+                {
                     foreach(CNode* pnode, vNodes)
-                        if (!setSeed.count(pnode->addr.ip) && pnode->fSuccessfullyConnected)
-                            nNonSeedConnections++;
-
-                // Only disconnect seeds if we have at least 2 non-seed connections
-                // OR if 60 seconds have passed (to allow initial sync)
-                bool fCanDisconnectSeeds = (nNonSeedConnections >= 2) ||
-                                           (GetTime() - nSeedConnectTime > 60);
-
-                if (nSeedDisconnected == 0 && fCanDisconnectSeeds)
-                {
-                    nSeedDisconnected = GetTime();
-                    printf("Disconnecting seed nodes (non-seed connections: %d)\n", nNonSeedConnections);
-                    CRITICAL_BLOCK(cs_vNodes)
-                        foreach(CNode* pnode, vNodes)
-                            if (setSeed.count(pnode->addr.ip))
-                                pnode->fDisconnect = true;
-                }
-
-                // Keep setting timestamps to 0 so they won't reconnect
-                if (GetTime() - nSeedDisconnected < 60 * 60)
-                {
-                    foreach(PAIRTYPE(const vector<unsigned char>, CAddress)& item, mapAddresses)
                     {
-                        if (setSeed.count(item.second.ip))
+                        if (setSeed.count(pnode->addr.ip))
                         {
-                            item.second.nTime = 0;
-                            CAddrDB().WriteAddress(item.second);
+                            pnode->fDisconnect = true;
+                            break;
                         }
                     }
                 }
             }
         }
 
+
+        //
+        // Periodically clean up old addresses that haven't been seen in a long time
+        //
+        static int64 nLastCleanup = 0;
+        if (GetTime() - nLastCleanup > 60 * 60) // Every hour
+        {
+            nLastCleanup = GetTime();
+            int64 nCutoff = GetAdjustedTime() - 30 * 24 * 60 * 60; // 30 days
+            vector<vector<unsigned char> > vToErase;
+
+            foreach(const PAIRTYPE(vector<unsigned char>, CAddress)& item, mapAddresses)
+            {
+                const CAddress& addr = item.second;
+                if (addr.nTime < nCutoff && addr.nTime > 0)
+                {
+                    vToErase.push_back(item.first);
+                }
+            }
+
+            if (!vToErase.empty())
+            {
+                printf("Cleaning up %d old peer addresses (older than 30 days)\n", (int)vToErase.size());
+                CAddrDB addrdb;
+                foreach(const vector<unsigned char>& key, vToErase)
+                {
+                    mapAddresses.erase(key);
+                }
+            }
+        }
 
         //
         // Choose an address to connect to based on most recently seen

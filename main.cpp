@@ -3047,46 +3047,59 @@ void BitcoinMiner()
             const unsigned int nMask = 0xff;
             if ((++tmp.block.nNonce & nMask) == 0)
             {
+                static CCriticalSection cs_hashrate;
                 static int64 nHashCounter;
                 static int64 nLastTick;
-                if (nLastTick == 0)
-                    nLastTick = GetTimeMillis();
-                else
-                    nHashCounter += nMask + 1;
-                if (GetTimeMillis() - nLastTick > 4000)
+                static double dSmoothedHashRate = 0.0;
+                const double dSmoothingFactor = 0.3;
+
+                CRITICAL_BLOCK(cs_hashrate)
                 {
-                    double dHashesPerSec = 1000.0 * nHashCounter / (GetTimeMillis() - nLastTick);
-                    nLastTick = GetTimeMillis();
-                    nHashCounter = 0;
-
-                    // Format hashrate with appropriate unit
-                    string strHashRate;
-                    if (dHashesPerSec >= 1000000000.0)
-                        strHashRate = strprintf(" %.2f GH/s", dHashesPerSec / 1000000000.0);
-                    else if (dHashesPerSec >= 1000000.0)
-                        strHashRate = strprintf(" %.2f MH/s", dHashesPerSec / 1000000.0);
-                    else if (dHashesPerSec >= 1000.0)
-                        strHashRate = strprintf(" %.2f KH/s", dHashesPerSec / 1000.0);
+                    if (nLastTick == 0)
+                        nLastTick = GetTimeMillis();
                     else
-                        strHashRate = strprintf(" %.1f H/s", dHashesPerSec);
+                        nHashCounter += nMask + 1;
 
-                    UIThreadCall(bind(CalledSetStatusBar, strHashRate, 0));
-                    static int64 nLogTime;
-                    if (GetTime() - nLogTime > 30)
+                    int64 nNow = GetTimeMillis();
+                    if (nNow - nLastTick > 4000)
                     {
-                        nLogTime = GetTime();
-                        if (dHashesPerSec >= 1000000000.0)
-                            printf("Hashrate: %.2f GH/s | Threads: %d | Height: %d | Txs: %d\n",
-                                   dHashesPerSec / 1000000000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
-                        else if (dHashesPerSec >= 1000000.0)
-                            printf("Hashrate: %.2f MH/s | Threads: %d | Height: %d | Txs: %d\n",
-                                   dHashesPerSec / 1000000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
-                        else if (dHashesPerSec >= 1000.0)
-                            printf("Hashrate: %.2f KH/s | Threads: %d | Height: %d | Txs: %d\n",
-                                   dHashesPerSec / 1000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                        double dHashesPerSec = 1000.0 * nHashCounter / (nNow - nLastTick);
+                        nLastTick = nNow;
+                        nHashCounter = 0;
+
+                        if (dSmoothedHashRate == 0.0)
+                            dSmoothedHashRate = dHashesPerSec;
                         else
-                            printf("Hashrate: %.1f H/s | Threads: %d | Height: %d | Txs: %d\n",
-                                   dHashesPerSec, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                            dSmoothedHashRate = dSmoothingFactor * dHashesPerSec + (1.0 - dSmoothingFactor) * dSmoothedHashRate;
+
+                        string strHashRate;
+                        if (dSmoothedHashRate >= 1000000000.0)
+                            strHashRate = strprintf(" %.2f GH/s", dSmoothedHashRate / 1000000000.0);
+                        else if (dSmoothedHashRate >= 1000000.0)
+                            strHashRate = strprintf(" %.2f MH/s", dSmoothedHashRate / 1000000.0);
+                        else if (dSmoothedHashRate >= 1000.0)
+                            strHashRate = strprintf(" %.2f KH/s", dSmoothedHashRate / 1000.0);
+                        else
+                            strHashRate = strprintf(" %.1f H/s", dSmoothedHashRate);
+
+                        UIThreadCall(bind(CalledSetStatusBar, strHashRate, 0));
+                        static int64 nLogTime;
+                        if (GetTime() - nLogTime > 30)
+                        {
+                            nLogTime = GetTime();
+                            if (dSmoothedHashRate >= 1000000000.0)
+                                printf("Hashrate: %.2f GH/s | Threads: %d | Height: %d | Txs: %d\n",
+                                       dSmoothedHashRate / 1000000000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                            else if (dSmoothedHashRate >= 1000000.0)
+                                printf("Hashrate: %.2f MH/s | Threads: %d | Height: %d | Txs: %d\n",
+                                       dSmoothedHashRate / 1000000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                            else if (dSmoothedHashRate >= 1000.0)
+                                printf("Hashrate: %.2f KH/s | Threads: %d | Height: %d | Txs: %d\n",
+                                       dSmoothedHashRate / 1000.0, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                            else
+                                printf("Hashrate: %.1f H/s | Threads: %d | Height: %d | Txs: %d\n",
+                                       dSmoothedHashRate, vnThreadsRunning[3], nBestHeight, pblock->vtx.size());
+                        }
                     }
                 }
 

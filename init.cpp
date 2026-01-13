@@ -13,9 +13,11 @@ extern void InitSHA256();
 
 void ExitTimeout(void* parg)
 {
-#if defined(_WIN32) || defined(__MINGW32__) || defined(__WXMSW__)
     Sleep(5000);
+#if defined(_WIN32) || defined(__MINGW32__) || defined(__WXMSW__)
     ExitProcess(0);
+#else
+    _exit(0);
 #endif
 }
 

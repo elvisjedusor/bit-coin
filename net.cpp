@@ -1434,9 +1434,17 @@ bool StopNode()
 {
     printf("StopNode()\n");
     fShutdown = true;
+    fGenerateBitcoins = false;
     nTransactionsUpdated++;
+
+    if (hListenSocket != INVALID_SOCKET)
+    {
+        closesocket(hListenSocket);
+        hListenSocket = INVALID_SOCKET;
+    }
+
     int64 nStart = GetTime();
-    while (vnThreadsRunning[0] > 0 || vnThreadsRunning[2] > 0 || vnThreadsRunning[3] > 0 || vnThreadsRunning[4] > 0)
+    while (vnThreadsRunning[0] > 0 || vnThreadsRunning[1] > 0 || vnThreadsRunning[2] > 0 || vnThreadsRunning[3] > 0 || vnThreadsRunning[4] > 0)
     {
         if (GetTime() - nStart > 20)
             break;
@@ -1447,8 +1455,14 @@ bool StopNode()
     if (vnThreadsRunning[2] > 0) printf("ThreadMessageHandler still running\n");
     if (vnThreadsRunning[3] > 0) printf("ThreadBitcoinMiner still running\n");
     if (vnThreadsRunning[4] > 0) printf("ThreadRPCServer still running\n");
+
+    nStart = GetTime();
     while (vnThreadsRunning[2] > 0 || vnThreadsRunning[4] > 0)
+    {
+        if (GetTime() - nStart > 5)
+            break;
         Sleep(20);
+    }
     Sleep(50);
 
     return true;
@@ -1462,16 +1476,11 @@ public:
     }
     ~CNetCleanup()
     {
-        // Close sockets
         foreach(CNode* pnode, vNodes)
             if (pnode->hSocket != INVALID_SOCKET)
                 closesocket(pnode->hSocket);
-        if (hListenSocket != INVALID_SOCKET)
-            if (closesocket(hListenSocket) == SOCKET_ERROR)
-                printf("closesocket(hListenSocket) failed with error %d\n", WSAGetLastError());
 
 #if defined(_WIN32) || defined(__MINGW32__) || defined(__WXMSW__)
-        // Shutdown Windows Sockets
         WSACleanup();
 #endif
     }

@@ -3000,6 +3000,9 @@ void BitcoinMiner()
         uint256 hash;
         loop
         {
+            if (fShutdown || !fGenerateBitcoins)
+                return;
+
             pblock->nNonce = tmp.block.nNonce;
             hash = pblock->GetPoWHash();
 

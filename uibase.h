@@ -65,6 +65,8 @@
 #define wxID_BUTTONDELETE 1021
 #define wxID_BUTTONEDIT 1022
 #define wxID_TEXTCTRL 1023
+#define wxID_BUTTONGENERATECOINS 1024
+#define wxID_BUTTONSETTINGS 1025
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class CMainFrameBase
@@ -107,6 +109,9 @@ class CMainFrameBase : public wxFrame
 		virtual void OnMenuHelpAbout( wxCommandEvent& event ){ event.Skip(); }
 		virtual void OnButtonSend( wxCommandEvent& event ){ event.Skip(); }
 		virtual void OnButtonAddressBook( wxCommandEvent& event ){ event.Skip(); }
+		virtual void OnButtonGenerateCoins( wxCommandEvent& event ){ event.Skip(); }
+		virtual void OnUpdateUIButtonGenerateCoins( wxUpdateUIEvent& event ){ event.Skip(); }
+		virtual void OnButtonSettings( wxCommandEvent& event ){ event.Skip(); }
 		virtual void OnKeyDown( wxKeyEvent& event ){ event.Skip(); }
 		virtual void OnMouseEventsAddress( wxMouseEvent& event ){ event.Skip(); }
 		virtual void OnSetFocusAddress( wxFocusEvent& event ){ event.Skip(); }

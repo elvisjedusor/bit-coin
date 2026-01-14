@@ -1249,6 +1249,24 @@ void CMainFrame::OnButtonAddressBook(wxCommandEvent& event)
     }
 }
 
+void CMainFrame::OnButtonGenerateCoins(wxCommandEvent& event)
+{
+    // Toolbar: Generate Coins (same as menu)
+    GenerateBitcoins(event.IsChecked());
+}
+
+void CMainFrame::OnUpdateUIButtonGenerateCoins(wxUpdateUIEvent& event)
+{
+    event.Check(fGenerateBitcoins);
+}
+
+void CMainFrame::OnButtonSettings(wxCommandEvent& event)
+{
+    // Toolbar: Settings (same as menu Options->Options)
+    COptionsDialog dialog(this);
+    dialog.ShowModal();
+}
+
 void CMainFrame::OnSetFocusAddress(wxFocusEvent& event)
 {
     // Automatically select-all when entering window

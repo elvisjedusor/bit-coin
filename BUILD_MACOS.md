@@ -163,17 +163,41 @@ All settings are passed via command line arguments - there is no configuration f
 ./bitokd -gen                              # Enable mining
 ./bitokd -rpcuser=user -rpcpassword=pass   # Set RPC credentials
 ./bitokd -addnode=192.168.1.100            # Connect to specific node
-./bitokd -?                                # Show all options
+./bitokd --help                            # Show all options
 ```
 
 **IMPORTANT**: Back up your wallet.dat file regularly!
 
 ## Building for Distribution
 
-To create a distributable .app bundle:
+### Create .app Bundle (GUI)
 
 ```bash
 make -f makefile.osx bundle
 ```
 
 This creates `Bitok.app` that can be copied to /Applications or distributed to other Macs.
+
+### Distribution Builds
+
+**Apple Silicon (M1/M2/M3):**
+```bash
+make -f makefile.osx clean
+make -f makefile.osx ARCH=arm64 all
+make -f makefile.osx bundle
+```
+
+**Intel:**
+```bash
+make -f makefile.osx clean
+make -f makefile.osx ARCH=x86_64 YESPOWER_ARCH=x86-64-v3 all
+make -f makefile.osx bundle
+```
+
+### What to Distribute
+
+- `bitokd` - Command-line daemon
+- `bitok` - GUI wallet (command-line executable)
+- `Bitok.app` - GUI wallet (.app bundle)
+
+ARM Mac users need to run `xattr -cr <file>` before first launch (see "For End Users" section above).

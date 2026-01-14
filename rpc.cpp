@@ -1464,7 +1464,7 @@ int CommandLineRPC(int argc, char *argv[])
             throw runtime_error(strprintf("unknown command: %s", strMethod.c_str()));
 
         Value result;
-        if (argc == 3 && strcmp(argv[2], "-?") == 0)
+        if (argc == 3 && (strcmp(argv[2], "-?") == 0 || strcmp(argv[2], "--help") == 0))
         {
             // Call help locally, help text is returned in an exception
             try

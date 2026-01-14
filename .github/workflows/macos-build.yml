@@ -236,21 +236,21 @@ jobs:
 
         echo ""
         echo "=== Testing bitokd execution ==="
-        if ./bitokd -? 2>&1 | head -5; then
+        if ./bitokd --help 2>&1 | head -5; then
           echo ""
           echo "SUCCESS: bitokd runs correctly"
         else
           echo "ERROR: bitokd failed to run"
           echo ""
           echo "Debug with DYLD_PRINT_LIBRARIES:"
-          DYLD_PRINT_LIBRARIES=1 ./bitokd -? 2>&1 | head -20 || true
+          DYLD_PRINT_LIBRARIES=1 ./bitokd --help 2>&1 | head -20 || true
           exit 1
         fi
 
         echo ""
         echo "=== Testing from different directory ==="
         ORIG_DIR=$(pwd)
-        if (cd /tmp && "$ORIG_DIR/bitokd" -? 2>&1 | head -2); then
+        if (cd /tmp && "$ORIG_DIR/bitokd" --help 2>&1 | head -2); then
           echo "SUCCESS: Works from different directory"
         else
           echo "WARNING: Must run from install directory"
@@ -517,7 +517,7 @@ jobs:
 
         echo ""
         echo "=== Testing app launch ==="
-        timeout 5 ./Bitok.app/Contents/MacOS/bitok -? 2>&1 || {
+        timeout 5 ./Bitok.app/Contents/MacOS/bitok --help 2>&1 || {
           code=$?
           if [ "$code" -eq 124 ]; then
             echo "App started (timeout expected in headless mode)"
@@ -549,7 +549,7 @@ jobs:
           "    xattr -cr /path/to/bitokd-0.3.19.3-macos-*/" \
           "" \
           "Usage:" \
-          "  ./bitokd -?              Show help" \
+          "  ./bitokd --help          Show help" \
           "  ./bitokd -daemon         Run as daemon" \
           "  ./bitokd -server         Run with RPC server" \
           "" \
@@ -623,19 +623,19 @@ jobs:
 
         echo ""
         echo "=== Testing execution ==="
-        if ./bitokd -? 2>&1 | head -5; then
+        if ./bitokd --help 2>&1 | head -5; then
           echo ""
           echo "SUCCESS: Daemon runs correctly"
         else
           echo "FAILED: Daemon execution error"
-          DYLD_PRINT_LIBRARIES=1 ./bitokd -? 2>&1 | head -30 || true
+          DYLD_PRINT_LIBRARIES=1 ./bitokd --help 2>&1 | head -30 || true
           exit 1
         fi
 
         echo ""
         echo "=== Testing from /tmp ==="
         FULL_PATH="$TEST_DIR/$DAEMON_DIR/bitokd"
-        if (cd /tmp && "$FULL_PATH" -? 2>&1 | head -2); then
+        if (cd /tmp && "$FULL_PATH" --help 2>&1 | head -2); then
           echo "SUCCESS: Works from any directory"
         else
           echo "WARNING: Must cd to install directory"

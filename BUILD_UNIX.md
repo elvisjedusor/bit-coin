@@ -134,7 +134,7 @@ Basic daemon startup:
 ./bitokd -daemon                           # Run in background
 ./bitokd -gen                              # Enable mining
 ./bitokd -rpcuser=user -rpcpassword=pass   # Set RPC credentials
-./bitokd -?                                # Show all options
+./bitokd --help                            # Show all options
 ```
 
 ### RPC Commands
@@ -194,7 +194,7 @@ All settings are passed via command line arguments. There is no configuration fi
 ./bitokd -rpcuser=user -rpcpassword=pass   # Set RPC credentials
 ./bitokd -port=8333                        # Set network port
 ./bitokd -addnode=192.168.1.100            # Connect to specific node
-./bitokd -?                                # Show all options
+./bitokd --help                            # Show all options
 ```
 
 ---

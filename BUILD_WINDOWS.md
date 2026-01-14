@@ -145,7 +145,7 @@ bitokd.exe -daemon
 bitokd.exe -gen
 bitokd.exe -rpcuser=yourusername -rpcpassword=yourpassword -server
 bitokd.exe -addnode=192.168.1.100
-bitokd.exe -?
+bitokd.exe --help
 ```
 
 ---

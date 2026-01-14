@@ -321,7 +321,7 @@ bool CMyApp::OnInit2()
           _("Usage:") + "\t\t\t\t\t\t\t\t\t\t\n" +
             "  bitok [options]       \t" + "\n" +
             "  bitok [command]       \t" + _("Send command to bitokd running with -server or -daemon\n") +
-            "  bitok [command] -?    \t" + _("Get help for a command\n") +
+            "  bitok [command] --help\t" + _("Get help for a command\n") +
             "  bitok help            \t" + _("List commands\n") +
           _("Options:\n") +
             "  -gen            \t  " + _("Generate coins\n") +
@@ -334,7 +334,7 @@ bool CMyApp::OnInit2()
             "  -connect=<ip>   \t  " + _("Connect only to the specified node\n") +
             "  -server         \t  " + _("Accept command line and JSON-RPC commands\n") +
             "  -daemon         \t  " + _("Run in the background as a daemon and accept commands\n") +
-            "  -?              \t  " + _("This help message\n");
+            "  --help          \t  " + _("This help message\n");
 
 
         if (fWindows && fGUI)
@@ -718,10 +718,10 @@ bool AppInit(int argc, char* argv[])
     {
         string strUsage = string() +
           _("Usage:") + "\n" +
-            "  bitokd [options]       \n" +
-            "  bitokd [command]       " + _("Send command to bitokd running with -server or -daemon\n") +
-            "  bitokd [command] -?    " + _("Get help for a command\n") +
-            "  bitokd help            " + _("List commands\n") +
+            "  bitokd [options]         \n" +
+            "  bitokd [command]         " + _("Send command to bitokd running with -server or -daemon\n") +
+            "  bitokd [command] --help  " + _("Get help for a command\n") +
+            "  bitokd help              " + _("List commands\n") +
           _("Options:\n") +
             "  -gen              " + _("Generate coins\n") +
             "  -gen=0            " + _("Don't generate coins\n") +
@@ -732,7 +732,7 @@ bool AppInit(int argc, char* argv[])
             "  -connect=<ip>     " + _("Connect only to the specified node\n") +
             "  -server           " + _("Accept command line and JSON-RPC commands\n") +
             "  -daemon           " + _("Run in the background as a daemon and accept commands\n") +
-            "  -?                " + _("This help message\n");
+            "  --help            " + _("This help message\n");
         fprintf(stderr, "%s", strUsage.c_str());
         return false;
     }

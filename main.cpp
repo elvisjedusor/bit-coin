@@ -2908,16 +2908,19 @@ void BitcoinMiner()
         DWORD_PTR mask = (DWORD_PTR)1 << (tid % numCpus);
         SetThreadAffinityMask(GetCurrentThread(), mask);
     }
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 #elif defined(__APPLE__)
     thread_affinity_policy_data_t policy = { tid };
     thread_policy_set(pthread_mach_thread_np(pthread_self()),
                       THREAD_AFFINITY_POLICY,
                       (thread_policy_t)&policy, 1);
+    SetThreadPriority(THREAD_PRIORITY_NORMAL);
 #elif defined(__linux__)
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(tid % sysconf(_SC_NPROCESSORS_ONLN), &cpuset);
     pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+    SetThreadPriority(THREAD_PRIORITY_NORMAL);
 #endif
 
     CKey key;
@@ -2925,8 +2928,6 @@ void BitcoinMiner()
     CBigNum bnExtraNonce = 0;
     while (fGenerateBitcoins)
     {
-        SetThreadPriority(THREAD_PRIORITY_LOWEST);
-        Sleep(50);
         if (fShutdown) {
             yespower_free_local(&local);
             return;

@@ -1755,7 +1755,11 @@ void ThreadRPCServer2(void* parg)
     boost::asio::ip::address bindAddress;
     try
     {
+#if BOOST_VERSION >= 106600
+        bindAddress = boost::asio::ip::make_address(strRPCBind);
+#else
         bindAddress = boost::asio::ip::address::from_string(strRPCBind);
+#endif
     }
     catch (...)
     {

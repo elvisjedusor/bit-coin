@@ -42,6 +42,93 @@ CAddress addrProxy("127.0.0.1:9050");
 static const int MAX_OUTBOUND_PER_GROUP = 2;
 static const int MAX_INBOUND_PER_GROUP = 4;
 
+// Anti-eclipse: Anchor connections
+static const int NUM_ANCHOR_CONNECTIONS = 2;
+static const int64 MIN_ANCHOR_CONNECTION_TIME = 600;
+static vector<CAddress> vAnchorPeers;
+
+void SaveAnchors()
+{
+    vector<CAddress> vAnchors;
+    int64 nNow = GetTime();
+
+    printf("[ANCHOR] SaveAnchors called, checking %d nodes\n", (int)vNodes.size());
+
+    CRITICAL_BLOCK(cs_vNodes)
+    {
+        vector<pair<int64, CAddress> > vCandidates;
+        foreach(CNode* pnode, vNodes)
+        {
+            int64 nConnectionTime = nNow - pnode->nTimeConnected;
+            printf("[ANCHOR] Node %s: inbound=%d, success=%d, time=%lld sec\n",
+                   pnode->addr.ToString().c_str(), pnode->fInbound,
+                   pnode->fSuccessfullyConnected, nConnectionTime);
+
+            if (!pnode->fInbound && pnode->fSuccessfullyConnected)
+            {
+                if (nConnectionTime >= MIN_ANCHOR_CONNECTION_TIME)
+                    vCandidates.push_back(make_pair(nConnectionTime, pnode->addr));
+            }
+        }
+
+        sort(vCandidates.begin(), vCandidates.end());
+        reverse(vCandidates.begin(), vCandidates.end());
+
+        for (int i = 0; i < (int)vCandidates.size() && (int)vAnchors.size() < NUM_ANCHOR_CONNECTIONS; i++)
+            vAnchors.push_back(vCandidates[i].second);
+    }
+
+    if (vAnchors.empty())
+    {
+        printf("[ANCHOR] No suitable anchor peers to save (need outbound, successful, 10+ min)\n");
+        return;
+    }
+
+    string strFile = GetDataDir() + "/anchors.dat";
+    FILE* file = fopen(strFile.c_str(), "wb");
+    if (!file)
+    {
+        printf("[ANCHOR] Failed to open anchors.dat for writing\n");
+        return;
+    }
+
+    CAutoFile fileout = file;
+    fileout << vAnchors;
+    printf("[ANCHOR] Saved %d anchor peers\n", (int)vAnchors.size());
+}
+
+bool LoadAnchors()
+{
+    vAnchorPeers.clear();
+    string strFile = GetDataDir() + "/anchors.dat";
+    FILE* file = fopen(strFile.c_str(), "rb");
+    if (!file)
+    {
+        printf("[ANCHOR] No anchors.dat found (first run or deleted)\n");
+        return false;
+    }
+
+    try
+    {
+        CAutoFile filein = file;
+        filein >> vAnchorPeers;
+        printf("[ANCHOR] Loaded %d anchor peers\n", (int)vAnchorPeers.size());
+        return !vAnchorPeers.empty();
+    }
+    catch (...)
+    {
+        printf("[ANCHOR] Error reading anchors.dat\n");
+        vAnchorPeers.clear();
+        return false;
+    }
+}
+
+void ClearAnchorsFile()
+{
+    string strFile = GetDataDir() + "/anchors.dat";
+    remove(strFile.c_str());
+}
+
 int GetInboundGroupCount(uint16_t nGroup)
 {
     int nCount = 0;
@@ -945,6 +1032,22 @@ void ThreadOpenConnections2(void* parg)
         }
     }
 
+    // Anti-eclipse: Connect to anchor peers from previous session
+    if (LoadAnchors())
+    {
+        printf("[ANCHOR] Connecting to %d anchor peers from previous session\n", (int)vAnchorPeers.size());
+        foreach(const CAddress& addr, vAnchorPeers)
+        {
+            if (fShutdown)
+                return;
+            printf("[ANCHOR] Connecting to anchor peer %s\n", addr.ToString().c_str());
+            OpenNetworkConnection(addr);
+            Sleep(500);
+        }
+        ClearAnchorsFile();
+        vAnchorPeers.clear();
+    }
+
     // Initiate network connections
     int64 nStart = GetTime();
     const int nMaxConnections = 8;
@@ -1515,6 +1618,9 @@ void StartNode(void* parg)
 bool StopNode()
 {
     printf("StopNode()\n");
+
+    SaveAnchors();
+
     fShutdown = true;
     fGenerateBitcoins = false;
     nTransactionsUpdated++;

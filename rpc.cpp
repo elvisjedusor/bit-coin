@@ -341,6 +341,12 @@ Value validateaddress(const Array& params, bool fHelp)
         bool isMine = mapPubKeys.count(hash160) > 0;
         result.push_back(Pair("ismine", isMine));
 
+        if (isMine)
+        {
+            vector<unsigned char> vchPubKey = mapPubKeys[hash160];
+            result.push_back(Pair("pubkey", HexStr(vchPubKey, false)));
+        }
+
         CRITICAL_BLOCK(cs_mapAddressBook)
         {
             if (mapAddressBook.count(strAddress))
@@ -547,16 +553,17 @@ Value submitblock(const Array& params, bool fHelp)
 
     vector<unsigned char> blockData = ParseHex(params[0].get_str());
     CDataStream ssBlock(blockData, SER_NETWORK);
-    CBlock block;
+    CBlock* pblock = new CBlock();
 
     try {
-        ssBlock >> block;
+        ssBlock >> *pblock;
     }
     catch (std::exception &e) {
+        delete pblock;
         throw runtime_error("Block decode failed");
     }
 
-    bool fAccepted = ProcessBlock(NULL, &block);
+    bool fAccepted = ProcessBlock(NULL, pblock);
     if (!fAccepted)
         return string("rejected");
 

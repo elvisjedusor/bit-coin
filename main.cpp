@@ -3368,7 +3368,7 @@ int64 GetNetworkHashPS(int lookup)
     }
 
     double timeDiff = maxTime - minTime;
-    double hashesPerSec = (totalWork * pow(2.0, 18)) / timeDiff;
+    double hashesPerSec = (totalWork * pow(2.0, 17)) / timeDiff;
 
     return (int64)hashesPerSec;
 }

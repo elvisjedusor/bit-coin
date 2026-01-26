@@ -236,112 +236,23 @@ bool ConnectSocket(const CAddress& addrConnect, SOCKET& hSocketRet)
     return true;
 }
 
-
-
-bool GetMyExternalIP2(const CAddress& addrConnect, const char* pszGet, const char* pszKeyword, unsigned int& ipRet)
+bool GetMyExternalIP(unsigned int& ipRet)
 {
-    SOCKET hSocket;
-    if (!ConnectSocket(addrConnect, hSocket))
-        return error("GetMyExternalIP() : connection to %s failed", addrConnect.ToString().c_str());
+    if (fUseProxy)
+        return false;
 
-    send(hSocket, pszGet, strlen(pszGet), MSG_NOSIGNAL);
-
-    string strLine;
-    while (RecvLine(hSocket, strLine))
+    if (mapArgs.count("-externalip"))
     {
-        if (strLine.empty())
+        CAddress addr(mapArgs["-externalip"].c_str());
+        if (addr.IsValid())
         {
-            if (pszKeyword == NULL)
-            {
-                if (!RecvLine(hSocket, strLine))
-                {
-                    closesocket(hSocket);
-                    return false;
-                }
-            }
-            else
-            {
-                loop
-                {
-                    if (!RecvLine(hSocket, strLine))
-                    {
-                        closesocket(hSocket);
-                        return false;
-                    }
-                    if (strLine.find(pszKeyword) != -1)
-                    {
-                        strLine = strLine.substr(strLine.find(pszKeyword) + strlen(pszKeyword));
-                        break;
-                    }
-                }
-            }
-            closesocket(hSocket);
-            if (strLine.find("<"))
-                strLine = strLine.substr(0, strLine.find("<"));
-            strLine = strLine.substr(strspn(strLine.c_str(), " \t\n\r"));
-            while (strLine.size() > 0 && isspace(strLine[strLine.size()-1]))
-                strLine.resize(strLine.size()-1);
-            CAddress addr(strLine.c_str());
-            printf("GetMyExternalIP() received [%s] %s\n", strLine.c_str(), addr.ToString().c_str());
-            if (addr.ip == 0 || addr.ip == INADDR_NONE || !addr.IsRoutable())
-                return false;
+            printf("GetMyExternalIP() using configured -externalip: %s\n", addr.ToString().c_str());
             ipRet = addr.ip;
             return true;
         }
     }
-    closesocket(hSocket);
-    return error("GetMyExternalIP() : connection closed");
-}
 
-
-bool GetMyExternalIP(unsigned int& ipRet)
-{
-    CAddress addrConnect;
-    const char* pszGet;
-    const char* pszKeyword;
-
-    if (fUseProxy)
-        return false;
-
-    for (int nHost = 1; nHost <= 2; nHost++)
-    {
-        if (nHost == 1)
-        {
-            struct hostent* phostent = gethostbyname("api.ipify.org");
-            if (phostent && phostent->h_addr_list && phostent->h_addr_list[0])
-                addrConnect = CAddress(*(u_long*)phostent->h_addr_list[0], htons(80));
-            else
-                continue;
-
-            pszGet = "GET / HTTP/1.1\r\n"
-                     "Host: api.ipify.org\r\n"
-                     "User-Agent: Bit/0.3\r\n"
-                     "Connection: close\r\n"
-                     "\r\n";
-
-            pszKeyword = NULL;
-        }
-        else if (nHost == 2)
-        {
-            struct hostent* phostent = gethostbyname("icanhazip.com");
-            if (phostent && phostent->h_addr_list && phostent->h_addr_list[0])
-                addrConnect = CAddress(*(u_long*)phostent->h_addr_list[0], htons(80));
-            else
-                continue;
-
-            pszGet = "GET / HTTP/1.1\r\n"
-                     "Host: icanhazip.com\r\n"
-                     "User-Agent: Bit/0.3\r\n"
-                     "Connection: close\r\n"
-                     "\r\n";
-
-            pszKeyword = NULL;
-        }
-
-        if (GetMyExternalIP2(addrConnect, pszGet, pszKeyword, ipRet))
-            return true;
-    }
-
+    printf("GetMyExternalIP() skipped - external IP will be learned from peers\n");
     return false;
 }
 
@@ -955,12 +866,60 @@ void ThreadSocketHandler2(void* parg)
 
 
 
-// Bitok: Seed nodes for network bootstrap
+// Bitok: DNS seeds for reliable network bootstrap
+static const char* pszDNSSeeds[] = {
+    "seed1.bitokd.run",
+    "seed2.bitokd.run",
+    "seed3.bitokd.run",
+    NULL
+};
+
+void QueryDNSSeeds()
+{
+    printf("[DNS] Querying DNS seeds for peer discovery\n");
+
+    int nAddresses = 0;
+    for (int i = 0; pszDNSSeeds[i] != NULL; i++)
+    {
+        if (fShutdown)
+            return;
+
+        printf("[DNS] Resolving: %s\n", pszDNSSeeds[i]);
+
+        struct hostent* phostent = gethostbyname(pszDNSSeeds[i]);
+        if (!phostent || !phostent->h_addr_list)
+        {
+            printf("[DNS] Failed to resolve %s\n", pszDNSSeeds[i]);
+            continue;
+        }
+
+        for (int j = 0; phostent->h_addr_list[j] != NULL; j++)
+        {
+            CAddress addr;
+            addr.ip = *(unsigned int*)phostent->h_addr_list[j];
+            addr.port = DEFAULT_PORT;
+            addr.nServices = NODE_NETWORK;
+            addr.nTime = GetAdjustedTime() - 3 * 24 * 60 * 60;
+
+            if (addr.IsValid() && addr.IsRoutable() && addr.ip != addrLocalHost.ip)
+            {
+                printf("[DNS] Got peer: %s\n", addr.ToString().c_str());
+                AddAddress(addr);
+                nAddresses++;
+            }
+        }
+    }
+
+    printf("[DNS] Discovered %d addresses from DNS seeds\n", nAddresses);
+}
+
+// Bitok: Hardcoded seed nodes (fallback if DNS fails)
 unsigned int pnSeed[] =
 {
-    0x215D6F40, // 64.111.93.33:8333
-    0x0A9F0DC6, // 198.13.159.10:8333
-    0x36C6FCA2, // 162.252.198.54:8333
+    0x215D6F40, // 64.111.93.33
+    0x0A9F0DC6, // 198.13.159.10
+    0x36C6FCA2, // 162.252.198.54
+    0xCF62D9C7, // 199.217.98.207
 };
 
 
@@ -1047,6 +1006,10 @@ void ThreadOpenConnections2(void* parg)
         ClearAnchorsFile();
         vAnchorPeers.clear();
     }
+
+    QueryDNSSeeds();
+    if (fShutdown)
+        return;
 
     // Initiate network connections
     int64 nStart = GetTime();

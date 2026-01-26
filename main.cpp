@@ -1469,6 +1469,47 @@ bool CBlock::AcceptBlock()
     if (nTime <= pindexPrev->GetMedianTimePast())
         return error("AcceptBlock() : block's timestamp is too early");
 
+    // Time warp attack mitigation (soft-fork)
+    // Activates at block TIMEWARP_ACTIVATION_HEIGHT
+    // Before activation: warnings only
+    // After activation: strict enforcement (rejects invalid blocks)
+    const unsigned int nTargetSpacing = 10 * 60;
+    const unsigned int nMaxTimestampDrift = 7200;
+    int nNextHeight = pindexPrev->nHeight + 1;
+    bool fEnforceTimewarp = (nNextHeight >= TIMEWARP_ACTIVATION_HEIGHT);
+
+    if (nTime > pindexPrev->nTime + nMaxTimestampDrift + nTargetSpacing * 6)
+    {
+        printf("WARNING: Block timestamp %u is far ahead of parent %u (diff=%u)\n",
+               nTime, pindexPrev->nTime, nTime - pindexPrev->nTime);
+        if (fEnforceTimewarp)
+            return error("AcceptBlock() : block timestamp too far ahead (time warp protection)");
+    }
+
+    // At difficulty adjustment boundaries, apply stricter validation
+    const unsigned int nTargetTimespan = 14 * 24 * 60 * 60;
+    const unsigned int nInterval = nTargetTimespan / nTargetSpacing;
+    if (nNextHeight % nInterval == 0)
+    {
+        const CBlockIndex* pindexFirst = pindexPrev;
+        for (int i = 0; pindexFirst && i < (int)(nInterval - 1); i++)
+            pindexFirst = pindexFirst->pprev;
+
+        if (pindexFirst)
+        {
+            int64 nActualTimespan = (int64)nTime - (int64)pindexFirst->nTime;
+            int64 nMinReasonableTimespan = (int64)nTargetTimespan / 8;
+
+            if (nActualTimespan < nMinReasonableTimespan)
+            {
+                printf("WARNING: Difficulty adjustment timespan %lld is suspiciously short (min=%lld)\n",
+                       nActualTimespan, nMinReasonableTimespan);
+                if (fEnforceTimewarp)
+                    return error("AcceptBlock() : timespan too short (time warp protection)");
+            }
+        }
+    }
+
     // Check that all transactions are finalized
     foreach(const CTransaction& tx, vtx)
         if (!tx.IsFinal(nTime))

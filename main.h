@@ -28,6 +28,8 @@ static const int64 MAX_MONEY = 21000000 * COIN;
 
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 
+static const int TIMEWARP_ACTIVATION_HEIGHT = 16000;
+
 static const CBigNum bnProofOfWorkLimit(~uint256(0) >> 17);
 
 

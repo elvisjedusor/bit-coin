@@ -1,4 +1,4 @@
-# Bitok Security Hardening & Network Improvements
+# Bitok Security Hardening & Network Improvements (v0.3.19.8)
 
 ## Overview
 

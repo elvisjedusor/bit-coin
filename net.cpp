@@ -40,7 +40,7 @@ CAddress addrProxy("127.0.0.1:9050");
 
 // Anti-eclipse: Network group diversity settings
 static const int MAX_OUTBOUND_PER_GROUP = 2;
-static const int MAX_INBOUND_PER_GROUP = 4;
+static const int MAX_INBOUND_PER_GROUP = 8;
 
 // Anti-eclipse: Anchor connections
 static const int NUM_ANCHOR_CONNECTIONS = 2;

@@ -3374,42 +3374,40 @@ int64 GetNetworkHashPS(int lookup)
     if (pb == NULL || nBestHeight < 2)
         return 0;
 
+    // Adjust lookup to available blocks
     int actualLookup = (nBestHeight < lookup) ? (int)nBestHeight : lookup;
 
-    CBlockIndex *pbEnd = pb->pnext;  // End after the best block
-    int64 minTime = pb->nTime;
-    int64 maxTime = minTime;
+    // Store the last block
+    CBlockIndex *pbLast = pb;
+    int64 timeLast = pbLast->nTime;
 
-    // Go back (actualLookup - 1) times to include the best block in the count
-    for (int i = 0; i < actualLookup - 1 && pb->pprev != NULL; i++)
+    // Go back actualLookup blocks
+    for (int i = 0; i < actualLookup && pb->pprev != NULL; i++)
     {
         pb = pb->pprev;
-        int64 time = pb->nTime;
-        minTime = min(time, minTime);
-        maxTime = max(time, maxTime);
     }
 
-    if (minTime == maxTime)
+    int64 timeFirst = pb->nTime;
+
+    // Calculate actual time span from real block timestamps
+    int64 timeSpan = timeLast - timeFirst;
+
+    if (timeSpan <= 0)
         return 0;
 
-    double totalWork = 0;
-    while (pb && pb != pbEnd)
-    {
-        int nShift = (pb->nBits >> 24) & 0xff;
-        int nMantissa = pb->nBits & 0x00ffffff;
+    // Number of block intervals
+    int numBlocks = actualLookup;
 
-        if (nMantissa > 0)
-        {
-            double dDiff = (double)0x00ffffff / (double)nMantissa;
-            while (nShift < 0x1e) { dDiff *= 256.0; nShift++; }
-            while (nShift > 0x1e) { dDiff /= 256.0; nShift--; }
-            totalWork += dDiff;
-        }
-        pb = pb->pnext;
-    }
+    // Get current difficulty from the best block
+    int nShift = (pbLast->nBits >> 24) & 0xff;
+    int nMantissa = pbLast->nBits & 0x007fffff;
+    double difficulty = (double)0x007fffff / (double)nMantissa;
+    while (nShift < 0x1e) { difficulty *= 256.0; nShift++; }
+    while (nShift > 0x1e) { difficulty /= 256.0; nShift--; }
 
-    double timeDiff = maxTime - minTime;
-    double hashesPerSec = (totalWork * pow(2.0, 17)) / timeDiff;
+    // Hashrate = (num_blocks * difficulty * 2^17) / actual_time_span
+    // Bitok uses 17 leading zero bits
+    double hashesPerSec = ((double)numBlocks * difficulty * pow(2.0, 17)) / (double)timeSpan;
 
     return (int64)hashesPerSec;
 }
